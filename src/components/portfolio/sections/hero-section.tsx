@@ -2,7 +2,7 @@ import { Section } from "@/lib/types";
 import { SectionWrapper } from "../shared/section-wrapper";
 import Link from "next/link";
 import Image from "next/image";
-import { Github, Linkedin, Twitter, Globe, ArrowDown } from "lucide-react";
+import { Github, Linkedin, Twitter, Globe, ArrowDown, FileDown, FileText } from "lucide-react";
 
 interface Props { section: Section; settings: Record<string, unknown>; }
 
@@ -23,7 +23,7 @@ export function HeroSection({ section, settings }: Props) {
   const hasCtaPrimary = !!content.cta_primary_text;
   const showSocialLinks = !!content.show_social_links;
   const showAvatar = !!content.show_avatar && !!settings.avatar_url;
-  const resumeHref = (settings.resume_url as string) || "/resume";
+  const resumeUrl = settings.resume_url as string | null | undefined;
 
   return (
     <SectionWrapper section={section} className="min-h-screen flex items-center">
@@ -71,13 +71,25 @@ export function HeroSection({ section, settings }: Props) {
                 {content.cta_primary_text as string}
               </a>
             )}
+            {resumeUrl && (
+              <a
+                href={resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <FileDown className="h-4 w-4" />
+                Download ATS Resume
+              </a>
+            )}
             <a
-              href={resumeHref}
-              target={settings.resume_url ? "_blank" : undefined}
+              href="/resume"
+              target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors"
             >
-              {content.cta_secondary_text as string || "Download Resume"}
+              <FileText className="h-4 w-4" />
+              Download Digital Resume
             </a>
           </div>
 
