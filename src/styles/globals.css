@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 84% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 84% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 84% 5%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+    --radius: 0.5rem;
+    --sidebar: 222 84% 5%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+  }
+
+  .dark {
+    --background: 222 84% 5%;
+    --foreground: 210 40% 98%;
+    --card: 217 33% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221 83% 60%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 221 83% 60%;
+    --sidebar: 222 84% 4%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-border: 217 33% 12%;
+    --sidebar-accent: 217 33% 12%;
+    --sidebar-accent-foreground: 210 40% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { @apply bg-muted; }
+::-webkit-scrollbar-thumb { @apply bg-muted-foreground/30 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/50; }
+
+/* Markdown Body Styles */
+.markdown-body h1 { @apply text-3xl font-bold mt-8 mb-4 text-foreground; }
+.markdown-body h2 { @apply text-2xl font-bold mt-6 mb-3 text-foreground; }
+.markdown-body h3 { @apply text-xl font-bold mt-5 mb-2 text-foreground; }
+.markdown-body h4 { @apply text-lg font-bold mt-4 mb-2 text-foreground; }
+.markdown-body p { @apply mb-4 leading-relaxed text-foreground/80; }
+.markdown-body a { @apply text-primary hover:underline font-medium; }
+.markdown-body ul { @apply list-disc pl-5 mb-4 space-y-1 text-foreground/80; }
+.markdown-body ol { @apply list-decimal pl-5 mb-4 space-y-1 text-foreground/80; }
+.markdown-body li { @apply mb-1; }
+.markdown-body blockquote { @apply border-l-4 border-primary/40 pl-4 italic my-4 text-muted-foreground; }
+.markdown-body pre { @apply bg-muted/60 p-4 rounded-lg overflow-x-auto my-4 border font-mono text-sm; }
+.markdown-body code { @apply bg-muted px-1.5 py-0.5 rounded font-mono text-xs text-primary; }
+.markdown-body pre code { @apply p-0 bg-transparent text-foreground text-xs; }
+.markdown-body img { @apply rounded-lg my-6 max-w-full h-auto border shadow-sm; }
+.markdown-body table { @apply w-full border-collapse my-6 text-sm; }
+.markdown-body th, .markdown-body td { @apply border border-border px-3 py-2 text-left; }
+.markdown-body th { @apply bg-muted font-semibold; }
+

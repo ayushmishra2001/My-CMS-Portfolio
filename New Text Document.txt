@@ -1,0 +1,57 @@
+
+Phase 9 — Open everything in the browser
+WhatURLPortfoliohttp://localhost:3000Admin Panelhttp://localhost:3000/admin/loginSupabase Studio (visual DB)http://127.0.0.1:54323Email Inbox (magic links)http://127.0.0.1:54324
+
+Phase 10 — Sign into the admin
+1. Go to http://localhost:3000/admin/login
+2. Enter any email — for example admin@test.com
+3. Click Send magic link
+4. Open http://127.0.0.1:54324 — this is the local fake email inbox (Inbucket)
+5. You will see an email — click Confirm your mail or the magic link inside it
+6. You are now logged in and redirected to the admin dashboard
+
+Daily workflow after this
+Every day when you want to work:
+bash# Terminal 1 — start Supabase (must have Docker Desktop open first)
+npx supabase start
+
+# Terminal 2 — start Next.js
+npm run dev
+When you are done:
+bash# Stop Next.js: press Ctrl+C in Terminal 2
+
+# Stop Supabase in Terminal 1:
+npx supabase stop
+
+Troubleshooting
+supabase start hangs or fails
+
+Make sure Docker Desktop is fully open and the whale icon has stopped animating. Try docker ps — if it returns without error, Docker is ready.
+Port already in use error
+bashnpx supabase stop
+npx supabase start
+anon key stops working after restart
+
+Run npx supabase start again and re-copy the anon key into .env.local. The key is the same every time for local, so this usually isn't needed — but if it breaks, this fixes it.
+Tables don't exist error
+bashnpx supabase db reset
+This re-runs the migration cleanly.
+Magic link email not appearing in Inbucket
+
+Wait 5 seconds and refresh http://127.0.0.1:54324. If still nothing, check that Supabase is still running with npx supabase status.
+npm run dev shows module not found errors
+bashnpm install
+npm run dev
+
+
+
+
+
+
+Remove node :
+
+
+# Delete the heavy folders
+Remove-Item -Recurse -Force node_modules
+Remove-Item -Recurse -Force .next
+Remove-Item -Recurse -Force .supabase
