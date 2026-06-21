@@ -2,7 +2,30 @@
 -- DevFolio CMS — Complete Unified Schema
 -- Run via: npx supabase db reset
 -- ═══════════════════════════════════════════════════════════════
+-- ─────────────────────────────────────────────────────────────────
+-- CLEAN SLATE — safe to re-run on any database state
+-- ─────────────────────────────────────────────────────────────────
+DROP TABLE IF EXISTS site_settings CASCADE;
+DROP TABLE IF EXISTS sections CASCADE;
+DROP TABLE IF EXISTS projects CASCADE;
+DROP TABLE IF EXISTS project_images CASCADE;
+DROP TABLE IF EXISTS skills CASCADE;
+DROP TABLE IF EXISTS experience CASCADE;
+DROP TABLE IF EXISTS education CASCADE;
+DROP TABLE IF EXISTS certifications CASCADE;
+DROP TABLE IF EXISTS testimonials CASCADE;
+DROP TABLE IF EXISTS contact_messages CASCADE;
+DROP TABLE IF EXISTS section_history CASCADE;
+DROP TABLE IF EXISTS posts CASCADE;
+DROP TABLE IF EXISTS analytics_events CASCADE;
 
+DROP POLICY IF EXISTS "public_read_assets" ON storage.objects;
+DROP POLICY IF EXISTS "auth_upload_assets" ON storage.objects;
+DROP POLICY IF EXISTS "auth_update_assets" ON storage.objects;
+DROP POLICY IF EXISTS "auth_delete_assets" ON storage.objects;
+
+DROP FUNCTION IF EXISTS update_updated_at CASCADE;
+DROP FUNCTION IF EXISTS save_section_history CASCADE;
 -- Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
