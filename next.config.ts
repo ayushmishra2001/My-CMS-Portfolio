@@ -24,9 +24,6 @@ const nextConfig: NextConfig = {
       allowedOrigins: ["localhost:3000"],
     },
   },
-  devIndicators: {
-    appIsrStatus: false,
-  },
 };
 
 export default nextConfig;
