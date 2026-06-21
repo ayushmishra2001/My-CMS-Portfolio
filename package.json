@@ -2,6 +2,10 @@
   "name": "devfolio-cms",
   "version": "0.1.0",
   "private": true,
+  "overrides": {
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
