@@ -12,7 +12,7 @@ export function SkillsSection({ section, settings: _ }: Props) {
   const displayStyle = (content.display_style as string) || "tags";
 
   useEffect(() => {
-    createClient().from("skills").select("*").order("category").order("display_order")
+    createClient().from("skills").select("*").eq("is_visible", true).order("category").order("display_order")
       .then(({ data }) => setSkills(data ?? []));
   }, []);
 

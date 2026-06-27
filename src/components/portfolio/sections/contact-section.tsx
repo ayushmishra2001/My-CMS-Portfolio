@@ -108,7 +108,7 @@ export function ContactSection({ section, settings }: Props) {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <FormField label="Name" required error={errors.name?.message}>
-                    <Input {...register("name", { required: "Required" })} placeholder="Ayush Kumar" />
+                    <Input {...register("name", { required: "Required" })} placeholder="Your Name" />
                   </FormField>
                   <FormField label="Email" required error={errors.email?.message}>
                     <Input {...register("email", { required: "Required" })} type="email" placeholder="you@example.com" />

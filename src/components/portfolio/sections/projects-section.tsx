@@ -116,11 +116,9 @@ export function ProjectsSection({ section, settings: _ }: Props) {
   const layout = (content.layout as string) || "grid";
   const maxItems = (content.max_items as number) || 6;
   const featuredOnly = content.show_featured_only as boolean;
-
   useEffect(() => {
     const supabase = createClient();
-    // Select both projects and nested project_images relation
-    let query = supabase.from("projects").select("*, project_images(*)").order("display_order").limit(maxItems);
+    let query = supabase.from("projects").select("*, project_images(*)").eq("is_visible", true).order("display_order").limit(maxItems);
     if (featuredOnly) query = query.eq("is_featured", true);
     query.then(({ data }) => setProjects(data ?? []));
   }, [maxItems, featuredOnly]);

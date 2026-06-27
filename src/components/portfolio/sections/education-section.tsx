@@ -15,7 +15,8 @@ export function EducationSection({ section, settings: _ }: Props) {
     createClient()
       .from("education")
       .select("*")
-      .order("start_date", { ascending: false })
+      .eq("is_visible", true)
+      .order("display_order")
       .then(({ data }) => setItems(data ?? []));
   }, []);
 

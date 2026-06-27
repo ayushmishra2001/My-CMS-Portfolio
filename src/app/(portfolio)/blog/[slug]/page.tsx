@@ -17,6 +17,8 @@ export async function generateMetadata({ params }: Props) {
     .from("posts")
     .select("title, excerpt")
     .eq("slug", slug)
+    .eq("is_published", true)
+    .eq("is_visible", true)
     .single();
 
   if (!post) return {};
@@ -35,6 +37,7 @@ export default async function BlogPostDetailPage({ params }: Props) {
     .select("*")
     .eq("slug", slug)
     .eq("is_published", true)
+    .eq("is_visible", true)
     .single();
 
   const post = data as BlogPost | null;

@@ -8,7 +8,7 @@ interface Props { section: Section; settings: Record<string, unknown>; }
 
 export function AboutSection({ section, settings }: Props) {
   const content = section.content as Record<string, unknown>;
-  const showPhoto = !!content.show_photo && !!settings.avatar_url;
+  const showPhoto = !!content.show_photo && !!settings.avatar_url && settings.is_avatar_visible !== false;
   const showResume = !!content.show_resume_button;
   const resumeUrl = settings.resume_url as string | null | undefined;
 

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { Input } from "@/components/shared/form-elements";
 import { Button } from "@/components/shared/button";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ interface DataTableProps<T> {
   pageSize?: number;
   emptyMessage?: string;
   loading?: boolean;
+  onReorder?: (draggedId: string, targetId: string) => void;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -29,11 +30,13 @@ export function DataTable<T extends { id: string }>({
   pageSize = 10,
   emptyMessage = "No records found.",
   loading = false,
+  onReorder,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return data;
@@ -93,6 +96,7 @@ export function DataTable<T extends { id: string }>({
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr>
+                {onReorder && <th className="w-10 px-4 py-2.5"></th>}
                 {columns.map((col) => (
                   <th
                     key={String(col.key)}
@@ -117,6 +121,7 @@ export function DataTable<T extends { id: string }>({
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
+                    {onReorder && <td className="w-10 px-4 py-3"></td>}
                     {columns.map((col) => (
                       <td key={String(col.key)} className="px-4 py-3">
                         <div className="h-4 bg-muted rounded animate-pulse" />
@@ -126,13 +131,47 @@ export function DataTable<T extends { id: string }>({
                 ))
               ) : paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="text-center py-10 text-muted-foreground text-sm">
+                  <td colSpan={columns.length + (onReorder ? 1 : 0)} className="text-center py-10 text-muted-foreground text-sm">
                     {search ? `No results for "${search}"` : emptyMessage}
                   </td>
                 </tr>
               ) : (
                 paginated.map((row) => (
-                  <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                  <tr
+                    key={row.id}
+                    draggable={!!onReorder}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("text/plain", row.id);
+                    }}
+                    onDragOver={(e) => {
+                      if (onReorder) {
+                        e.preventDefault();
+                        if (dragOverId !== row.id) setDragOverId(row.id);
+                      }
+                    }}
+                    onDragLeave={() => {
+                      if (onReorder) setDragOverId(null);
+                    }}
+                    onDrop={(e) => {
+                      if (onReorder) {
+                        e.preventDefault();
+                        setDragOverId(null);
+                        const draggedId = e.dataTransfer.getData("text/plain");
+                        if (draggedId && draggedId !== row.id) {
+                          onReorder(draggedId, row.id);
+                        }
+                      }
+                    }}
+                    className={cn(
+                      "hover:bg-muted/30 transition-colors",
+                      dragOverId === row.id && "border-t-2 border-primary bg-primary/5"
+                    )}
+                  >
+                    {onReorder && (
+                      <td className="w-10 px-4 py-3 cursor-grab active:cursor-grabbing text-muted-foreground select-none">
+                        <GripVertical className="h-4 w-4" />
+                      </td>
+                    )}
                     {columns.map((col) => (
                       <td key={String(col.key)} className={cn("px-4 py-3", col.className)}>
                         {col.cell

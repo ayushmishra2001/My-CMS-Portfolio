@@ -22,7 +22,7 @@ export function HeroSection({ section, settings }: Props) {
   const hasSubheading = !!content.subheading;
   const hasCtaPrimary = !!content.cta_primary_text;
   const showSocialLinks = !!content.show_social_links;
-  const showAvatar = !!content.show_avatar && !!settings.avatar_url;
+  const showAvatar = !!content.show_avatar && !!settings.avatar_url && settings.is_avatar_visible !== false;
   const resumeUrl = settings.resume_url as string | null | undefined;
 
   return (

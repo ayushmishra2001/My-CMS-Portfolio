@@ -11,6 +11,7 @@ export default async function BlogFeedPage() {
     .from("posts")
     .select("*")
     .eq("is_published", true)
+    .eq("is_visible", true)
     .order("published_at", { ascending: false });
 
   const blogPosts = (posts ?? []) as BlogPost[];

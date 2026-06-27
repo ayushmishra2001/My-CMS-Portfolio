@@ -4,12 +4,10 @@ import { useForm } from "react-hook-form";
 import { createClient } from "@/lib/supabase/client";
 import { AdminHeader } from "@/components/admin/layout/header";
 import { Button } from "@/components/shared/button";
-import { Input, Textarea, FormField, Card, CardContent, Badge, Switch } from "@/components/shared/form-elements";
+import { Input, Textarea, FormField, Card, CardContent, CardHeader, CardTitle, Badge, Switch } from "@/components/shared/form-elements";
 import { DataTable, Column } from "@/components/admin/ui/data-table";
 import { ConfirmDelete } from "@/components/admin/ui/confirm-delete";
-import * as Tabs from "@radix-ui/react-tabs";
-import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Pencil, Trash2, X, FileText, Globe } from "lucide-react";
+import { Pencil, Trash2, X, FileText, Globe } from "lucide-react";
 import { BlogPost, BlogPostFormData } from "@/lib/types";
 import toast from "react-hot-toast";
 
@@ -21,17 +19,16 @@ const defaultForm: BlogPostFormData = {
   cover_image: "",
   is_published: false,
   published_at: null,
+  is_visible: true,
 };
 
 export default function BlogAdminPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [activeTab, setActiveTab] = useState("view");
 
   const supabase = createClient();
 
@@ -40,15 +37,16 @@ export default function BlogAdminPage() {
   });
 
   const isPublished = watch("is_published");
+  const isVisible = watch("is_visible");
   const postTitle = watch("title");
 
   // Auto-generate slug from title
   useEffect(() => {
     if (postTitle && !editingId) {
       const generatedSlug = postTitle
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-");
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-");
       setValue("slug", generatedSlug);
     }
   }, [postTitle, editingId, setValue]);
@@ -62,16 +60,12 @@ export default function BlogAdminPage() {
 
   useEffect(() => { fetchPosts(); }, []);
 
-  const openCreate = () => {
-    setEditingId(null);
-    reset(defaultForm);
-    setDialogOpen(true);
-  };
-
   const openEdit = (post: BlogPost) => {
     setEditingId(post.id);
     reset({ ...post });
-    setDialogOpen(true);
+    
+    // Scroll to top form
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const onSubmit = async (data: BlogPostFormData) => {
@@ -92,7 +86,8 @@ export default function BlogAdminPage() {
     setSaving(false);
     if (error) { toast.error(error.message); return; }
     toast.success(editingId ? "Post updated" : "Post created");
-    setDialogOpen(false);
+    setEditingId(null);
+    reset(defaultForm);
     fetchPosts();
   };
 
@@ -107,70 +102,77 @@ export default function BlogAdminPage() {
     fetchPosts();
   };
 
-  const togglePublish = async (post: BlogPost) => {
-    const nextPublished = !post.is_published;
-    await supabase.from("posts").update({
-      is_published: nextPublished,
-      published_at: nextPublished ? new Date().toISOString() : null,
+  const togglePublished = async (post: BlogPost) => {
+    const isNewPublishedState = !post.is_published;
+    const { error } = await supabase.from("posts").update({
+      is_published: isNewPublishedState,
+      published_at: isNewPublishedState ? new Date().toISOString() : post.published_at,
     }).eq("id", post.id);
-    fetchPosts();
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(isNewPublishedState ? "Post published" : "Post set as draft");
+      fetchPosts();
+    }
+  };
+
+  const toggleVisible = async (post: BlogPost) => {
+    const { error } = await supabase.from("posts").update({ is_visible: !post.is_visible }).eq("id", post.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Post visibility updated");
+      fetchPosts();
+    }
   };
 
   const columns: Column<BlogPost>[] = [
     {
-      key: "title", header: "Title", sortable: true,
+      key: "title", header: "Post Details", sortable: true,
       cell: (row) => (
         <div>
           <p className="font-medium">{row.title}</p>
-          <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-xs">{row.excerpt || "No summary provided."}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-xs">{row.excerpt || "No excerpt provided"}</p>
         </div>
       ),
     },
     {
-      key: "slug", header: "Slug",
-      cell: (row) => <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{row.slug}</span>,
+      key: "slug", header: "Slug & Cover",
+      cell: (row) => (
+        <div>
+          <p className="text-xs font-mono">{row.slug}</p>
+          {row.cover_image && <p className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-xs">Has Cover Image</p>}
+        </div>
+      ),
     },
     {
       key: "is_published", header: "Status", sortable: true,
+      cell: (row) => row.is_published
+        ? <Badge variant="success">Published</Badge>
+        : <Badge variant="secondary">Draft</Badge>,
+    },
+    {
+      key: "is_visible", header: "Visible",
       cell: (row) => (
-        <Badge variant={row.is_published ? "success" : "secondary"}>
-          {row.is_published ? "Published" : "Draft"}
-        </Badge>
+        <Switch checked={row.is_visible} onCheckedChange={() => toggleVisible(row)} />
       ),
     },
     {
-      key: "published_at", header: "Published Date", sortable: true,
-      cell: (row) => (
-        <span className="text-xs text-muted-foreground">
-          {row.published_at
-            ? new Date(row.published_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
-            : "—"}
-        </span>
-      ),
-    },
-    {
-      key: "toggle", header: "Publish",
-      cell: (row) => (
-        <Switch checked={row.is_published} onCheckedChange={() => togglePublish(row)} />
-      ),
+      key: "published_at", header: "Published Date",
+      cell: (row) => row.published_at
+        ? <span className="text-xs text-muted-foreground">{new Date(row.published_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+        : <span className="text-xs text-muted-foreground font-mono">—</span>,
     },
     {
       key: "actions", header: "",
       cell: (row) => (
         <div className="flex items-center gap-1 justify-end">
-          {row.is_published && (
-            <a href={`/blog/${row.slug}`} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Globe className="h-3.5 w-3.5" />
-              </Button>
-            </a>
-          )}
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(row)}>
-            <Pencil className="h-3.5 w-3.5" />
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => togglePublished(row)}>
+            {row.is_published ? <FileText className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteId(row.id)}>
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(row)}><Pencil className="h-3.5 w-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteId(row.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
         </div>
       ),
     },
@@ -178,129 +180,85 @@ export default function BlogAdminPage() {
 
   return (
     <div className="flex flex-col flex-1 overflow-auto">
-      <AdminHeader
-        title="Blog Posts"
-        description="Write and publish articles on your portfolio website"
-        actions={
-          <Button size="sm" onClick={openCreate}>
-            <Plus className="h-4 w-4" />Write Post
-          </Button>
-        }
-      />
-
-      <div className="p-6">
-        <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-          <Tabs.List className="flex border-b border-border mb-6">
-            {["view", "add"].map((tab) => (
-              <Tabs.Trigger
-                key={tab}
-                value={tab}
-                className="px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors data-[state=active]:border-primary data-[state=active]:text-primary border-transparent text-muted-foreground hover:text-foreground capitalize"
+      <AdminHeader title="Blog Posts" description="Write and manage articles" />
+      
+      <div className="p-6 space-y-6">
+        {/* Upper Half: Form Card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b border-border">
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider">
+              {editingId ? "Edit Blog Post" : "Add New Blog Post"}
+            </CardTitle>
+            {editingId && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                onClick={() => { setEditingId(null); reset(defaultForm); }}
               >
-                {tab === "add" ? (editingId ? "Edit Post" : "Write Post") : "All Posts"}
-              </Tabs.Trigger>
-            ))}
-          </Tabs.List>
-
-          <Tabs.Content value="view">
-            <DataTable
-              data={posts}
-              columns={columns}
-              searchKeys={["title", "content", "excerpt"]}
-              loading={loading}
-              emptyMessage="No articles written yet. Write your first post!"
-            />
-          </Tabs.Content>
-
-          <Tabs.Content value="add">
-            <Card>
-              <CardContent className="p-6">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 max-w-3xl">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Title" required error={errors.title?.message} className="col-span-2">
-                      <Input {...register("title", { required: "Title is required" })} placeholder="My Technical Journey..." />
-                    </FormField>
-                    <FormField label="Slug" required error={errors.slug?.message}>
-                      <Input {...register("slug", { required: "Slug is required" })} placeholder="my-technical-journey" />
-                    </FormField>
-                    <FormField label="Cover Image URL">
-                      <Input {...register("cover_image")} type="url" placeholder="https://..." />
-                    </FormField>
-                  </div>
-
-                  <FormField label="Short Summary/Excerpt">
-                    <Textarea {...register("excerpt")} placeholder="A brief one-sentence summary for previews" rows={2} />
-                  </FormField>
-
-                  <FormField label="Content (Supports Markdown)" required error={errors.content?.message}>
-                    <Textarea {...register("content", { required: "Content is required" })} placeholder="Write your post content here in Markdown format..." rows={12} className="font-mono text-sm" />
-                  </FormField>
-
-                  <div className="flex items-center gap-3">
-                    <Switch checked={isPublished} onCheckedChange={(val) => setValue("is_published", val)} />
-                    <span className="text-sm">Publish immediately (visible to public)</span>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button type="submit" loading={saving}>
-                      {editingId ? "Update Post" : "Create Post"}
-                    </Button>
-                    {editingId && (
-                      <Button type="button" variant="outline" onClick={() => { setEditingId(null); reset(defaultForm); }}>
-                        Cancel Edit
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </Tabs.Content>
-        </Tabs.Root>
-      </div>
-
-      {/* Quick Edit Dialog */}
-      <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border bg-card p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <Dialog.Title className="text-base font-semibold flex items-center gap-2">
-                <FileText className="h-4 w-4" />{editingId ? "Edit Blog Post" : "Write Blog Post"}
-              </Dialog.Title>
-              <Dialog.Close asChild><Button variant="ghost" size="icon" className="h-7 w-7"><X className="h-4 w-4" /></Button></Dialog.Close>
-            </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <FormField label="Title" required error={errors.title?.message}>
-                <Input {...register("title", { required: "Title is required" })} />
-              </FormField>
-              <div className="grid grid-cols-2 gap-4">
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-6xl">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField label="Title" required error={errors.title?.message}>
+                  <Input {...register("title", { required: "Title is required" })} placeholder="My First Blog Post" />
+                </FormField>
                 <FormField label="Slug" required error={errors.slug?.message}>
-                  <Input {...register("slug", { required: "Slug is required" })} />
+                  <Input {...register("slug", { required: "Slug is required" })} placeholder="my-first-blog-post" />
                 </FormField>
                 <FormField label="Cover Image URL">
-                  <Input {...register("cover_image")} type="url" />
+                  <Input {...register("cover_image")} type="url" placeholder="https://..." />
                 </FormField>
+                <div className="md:col-span-3">
+                  <FormField label="Excerpt" hint="Short summary of the post">
+                    <Textarea {...register("excerpt")} rows={2} placeholder="A short introduction..." />
+                  </FormField>
+                </div>
               </div>
-              <FormField label="Excerpt">
-                <Textarea {...register("excerpt")} rows={2} />
+              <FormField label="Content" required error={errors.content?.message} hint="Markdown is supported">
+                <Textarea {...register("content", { required: "Content is required" })} rows={7} placeholder="Write your post here..." className="font-mono text-sm" />
               </FormField>
-              <FormField label="Content (Markdown)" required error={errors.content?.message}>
-                <Textarea {...register("content", { required: "Content is required" })} rows={10} className="font-mono text-xs" />
-              </FormField>
-              <div className="flex items-center gap-3">
-                <Switch checked={isPublished} onCheckedChange={(val) => setValue("is_published", val)} />
-                <span className="text-sm">Published</span>
+              
+              <div className="flex items-center gap-6 py-1">
+                <div className="flex items-center gap-3">
+                  <Switch checked={isPublished} onCheckedChange={(val) => setValue("is_published", val)} />
+                  <span className="text-sm">Published</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Switch checked={isVisible ?? true} onCheckedChange={(val) => setValue("is_visible", val)} />
+                  <span className="text-sm">Visible</span>
+                </div>
               </div>
-              <div className="flex gap-3 pt-2">
-                <Button type="submit" loading={saving}>{editingId ? "Update" : "Create"}</Button>
-                <Dialog.Close asChild><Button type="button" variant="outline">Cancel</Button></Dialog.Close>
+
+              <div className="flex justify-end gap-3 pt-2">
+                {editingId && (
+                  <Button type="button" variant="outline" size="sm" onClick={() => { setEditingId(null); reset(defaultForm); }}>
+                    Cancel
+                  </Button>
+                )}
+                <Button type="submit" size="sm" loading={saving}>
+                  {editingId ? "Save Changes" : "Save Post"}
+                </Button>
               </div>
             </form>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+          </CardContent>
+        </Card>
 
-      <ConfirmDelete open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)} onConfirm={handleDelete} loading={deleting} description="This will permanently delete the article." />
+        {/* Bottom Half: Table Card */}
+        <Card>
+          <CardHeader className="border-b border-border">
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider">All Blog Posts</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <DataTable data={posts} columns={columns} searchKeys={["title", "excerpt"]} loading={loading} emptyMessage="No blog posts yet. Add your first post." />
+          </CardContent>
+        </Card>
+      </div>
+
+      <ConfirmDelete open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)} onConfirm={handleDelete} loading={deleting} description="This will permanently delete the post." />
     </div>
   );
 }

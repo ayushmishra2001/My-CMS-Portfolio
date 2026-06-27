@@ -44,6 +44,7 @@ CREATE TABLE site_settings (
   phone           text,
   location        text,
   available_for_work boolean DEFAULT true,
+  is_avatar_visible boolean NOT NULL DEFAULT true,
   social_links    jsonb NOT NULL DEFAULT '{"github":"","linkedin":"","twitter":"","website":"","youtube":"","devto":"","hashnode":""}',
   seo_meta        jsonb NOT NULL DEFAULT '{"title":"","description":"","og_image":"","keywords":""}',
   webhook_urls    jsonb NOT NULL DEFAULT '{"discord":"","slack":"","telegram_token":"","telegram_chat_id":""}',
@@ -104,6 +105,7 @@ CREATE TABLE projects (
   image_url        text,
   status           text DEFAULT 'completed' CHECK (status IN ('completed','in_progress','archived')),
   is_featured      boolean DEFAULT false,
+  is_visible       boolean NOT NULL DEFAULT true,
   display_order    integer DEFAULT 0,
   start_date       date,
   end_date         date,
@@ -123,6 +125,7 @@ CREATE TABLE skills (
   icon_name        text,
   years_experience numeric(4,1),
   display_order    integer DEFAULT 0,
+  is_visible       boolean NOT NULL DEFAULT true,
   created_at       timestamptz DEFAULT now()
 );
 
@@ -139,6 +142,7 @@ CREATE TABLE experience (
   start_date    date NOT NULL,
   end_date      date,
   is_current    boolean DEFAULT false,
+  is_visible    boolean NOT NULL DEFAULT true,
   description   text,
   achievements  text[],
   tech_used     text[] DEFAULT '{}',
@@ -160,6 +164,7 @@ CREATE TABLE education (
   start_date    date,
   end_date      date,
   is_current    boolean DEFAULT false,
+  is_visible    boolean NOT NULL DEFAULT true,
   grade         text,
   description   text,
   display_order integer DEFAULT 0,
@@ -180,6 +185,7 @@ CREATE TABLE certifications (
   image_url     text,
   skills        text[] DEFAULT '{}',
   display_order integer DEFAULT 0,
+  is_visible    boolean NOT NULL DEFAULT true,
   created_at    timestamptz DEFAULT now()
 );
 
@@ -195,6 +201,7 @@ CREATE TABLE testimonials (
   content       text NOT NULL,
   rating        integer DEFAULT 5 CHECK (rating BETWEEN 1 AND 5),
   is_featured   boolean DEFAULT false,
+  is_visible    boolean NOT NULL DEFAULT true,
   display_order integer DEFAULT 0,
   created_at    timestamptz DEFAULT now()
 );
@@ -234,6 +241,7 @@ CREATE TABLE posts (
   excerpt      text,
   cover_image  text,
   is_published boolean DEFAULT false,
+  is_visible   boolean NOT NULL DEFAULT true,
   published_at timestamptz,
   created_at   timestamptz DEFAULT now(),
   updated_at   timestamptz DEFAULT now()
@@ -341,14 +349,14 @@ ALTER TABLE project_images     ENABLE ROW LEVEL SECURITY;
 -- Public READ/INSERT policies
 CREATE POLICY "public_read_site_settings"    ON site_settings      FOR SELECT TO anon USING (true);
 CREATE POLICY "public_read_visible_sections"  ON sections           FOR SELECT TO anon USING (is_visible = true);
-CREATE POLICY "public_read_projects"          ON projects           FOR SELECT TO anon USING (true);
-CREATE POLICY "public_read_skills"            ON skills             FOR SELECT TO anon USING (true);
-CREATE POLICY "public_read_experience"        ON experience         FOR SELECT TO anon USING (true);
-CREATE POLICY "public_read_education"         ON education          FOR SELECT TO anon USING (true);
-CREATE POLICY "public_read_certifications"    ON certifications     FOR SELECT TO anon USING (true);
-CREATE POLICY "public_read_testimonials"      ON testimonials       FOR SELECT TO anon USING (true);
+CREATE POLICY "public_read_projects"          ON projects           FOR SELECT TO anon USING (is_visible = true);
+CREATE POLICY "public_read_skills"            ON skills             FOR SELECT TO anon USING (is_visible = true);
+CREATE POLICY "public_read_experience"        ON experience         FOR SELECT TO anon USING (is_visible = true);
+CREATE POLICY "public_read_education"         ON education          FOR SELECT TO anon USING (is_visible = true);
+CREATE POLICY "public_read_certifications"    ON certifications     FOR SELECT TO anon USING (is_visible = true);
+CREATE POLICY "public_read_testimonials"      ON testimonials       FOR SELECT TO anon USING (is_visible = true);
 CREATE POLICY "public_insert_contact"         ON contact_messages   FOR INSERT TO anon WITH CHECK (true);
-CREATE POLICY "public_read_posts"             ON posts              FOR SELECT TO anon USING (is_published = true);
+CREATE POLICY "public_read_posts"             ON posts              FOR SELECT TO anon USING (is_published = true AND is_visible = true);
 CREATE POLICY "public_read_project_images"    ON project_images     FOR SELECT TO anon USING (true);
 CREATE POLICY "public_insert_analytics"       ON analytics_events   FOR INSERT TO anon WITH CHECK (true);
 

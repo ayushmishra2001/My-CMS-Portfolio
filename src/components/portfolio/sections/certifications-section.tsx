@@ -16,7 +16,8 @@ export function CertificationsSection({ section, settings: _ }: Props) {
     createClient()
       .from("certifications")
       .select("*")
-      .order("issue_date", { ascending: false })
+      .eq("is_visible", true)
+      .order("display_order")
       .then(({ data }) => setItems(data ?? []));
   }, []);
 

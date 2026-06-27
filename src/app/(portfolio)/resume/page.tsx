@@ -29,11 +29,11 @@ export default async function ResumePage() {
     { data: projectsData },
   ] = await Promise.all([
     supabase.from("site_settings").select("*").single(),
-    supabase.from("experience").select("*").order("display_order").order("start_date", { ascending: false }),
-    supabase.from("education").select("*").order("display_order").order("start_date", { ascending: false }),
-    supabase.from("skills").select("*").order("display_order"),
-    supabase.from("certifications").select("*").order("display_order").order("issue_date", { ascending: false }),
-    supabase.from("projects").select("*").order("display_order").order("created_at", { ascending: false }),
+    supabase.from("experience").select("*").eq("is_visible", true).order("display_order").order("start_date", { ascending: false }),
+    supabase.from("education").select("*").eq("is_visible", true).order("display_order").order("start_date", { ascending: false }),
+    supabase.from("skills").select("*").eq("is_visible", true).order("display_order"),
+    supabase.from("certifications").select("*").eq("is_visible", true).order("display_order").order("issue_date", { ascending: false }),
+    supabase.from("projects").select("*").eq("is_visible", true).order("display_order").order("created_at", { ascending: false }),
   ]);
 
   return (

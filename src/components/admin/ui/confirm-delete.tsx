@@ -21,7 +21,7 @@ export function ConfirmDelete({
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
-        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm rounded-lg border bg-card p-6 shadow-lg">
+        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-sm rounded-lg border bg-card p-6 shadow-lg">
           <AlertDialog.Title className="text-base font-semibold mb-1">{title}</AlertDialog.Title>
           <AlertDialog.Description className="text-sm text-muted-foreground mb-6">{description}</AlertDialog.Description>
           <div className="flex justify-end gap-3">

@@ -134,12 +134,12 @@ export default function SectionsPage() {
         {sections.map((section, index) => (
           <Card key={section.id} className={`transition-opacity ${!section.is_visible ? "opacity-50" : ""}`}>
             <CardContent className="p-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 {/* Drag handle (visual) */}
-                <GripVertical className="h-5 w-5 text-muted-foreground/40 shrink-0" />
+                <GripVertical className="h-5 w-5 text-muted-foreground/40 shrink-0 hidden sm:block" />
 
                 {/* Order arrows */}
-                <div className="flex flex-col gap-0.5">
+                <div className="flex flex-col gap-0.5 shrink-0">
                   <button
                     onClick={() => moveSection(index, "up")}
                     disabled={index === 0}
@@ -157,20 +157,20 @@ export default function SectionsPage() {
                 </div>
 
                 {/* Type badge */}
-                <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium shrink-0 ${SECTION_TYPE_COLORS[section.type]}`}>
+                <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] sm:text-xs font-medium shrink-0 ${SECTION_TYPE_COLORS[section.type]}`}>
                   {section.type}
                 </span>
 
                 {/* Label & subtitle */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{section.label}</p>
+                  <p className="font-medium text-xs sm:text-sm truncate">{section.label}</p>
                   {section.subtitle && (
-                    <p className="text-xs text-muted-foreground truncate">{section.subtitle}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{section.subtitle}</p>
                   )}
                 </div>
 
                 {/* Order number */}
-                <span className="text-xs text-muted-foreground font-mono shrink-0">#{section.display_order}</span>
+                <span className="text-xs text-muted-foreground font-mono shrink-0 hidden sm:inline">#{section.display_order}</span>
 
                 {/* Visibility toggle */}
                 <div className="flex items-center gap-2 shrink-0">
@@ -210,7 +210,7 @@ export default function SectionsPage() {
       <Dialog.Root open={!!historySection} onOpenChange={(o) => !o && setHistorySection(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-lg border bg-card p-6 shadow-lg">
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg rounded-lg border bg-card p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <Dialog.Title className="text-base font-semibold">Version History</Dialog.Title>

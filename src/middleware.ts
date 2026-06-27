@@ -28,8 +28,8 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
-  // Protect all /admin routes except /admin/login
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  // Protect all /admin routes except public admin routes (login, reset-password)
+  if (pathname.startsWith("/admin") && pathname !== "/admin/login" && pathname !== "/admin/reset-password") {
     if (!user) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/admin/login";

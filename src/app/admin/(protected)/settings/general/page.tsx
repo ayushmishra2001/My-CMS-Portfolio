@@ -16,6 +16,7 @@ export default function GeneralSettingsPage() {
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<SiteSettings>();
   const availableForWork = watch("available_for_work");
+  const isAvatarVisible = watch("is_avatar_visible");
 
   useEffect(() => {
     const fetch = async () => {
@@ -43,6 +44,7 @@ export default function GeneralSettingsPage() {
         phone: data.phone,
         location: data.location,
         available_for_work: data.available_for_work,
+        is_avatar_visible: data.is_avatar_visible,
         avatar_url: data.avatar_url,
         resume_url: data.resume_url,
         social_links: data.social_links,
@@ -83,7 +85,7 @@ export default function GeneralSettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <FormField label="Full Name" required error={errors.full_name?.message}>
-                  <Input {...register("full_name", { required: "Required" })} placeholder="Ayush Kumar" />
+                  <Input {...register("full_name", { required: "Required" })} placeholder="Your Name" />
                 </FormField>
                 <FormField label="Display Name" hint="Shown on portfolio, can be a nickname">
                   <Input {...register("display_name")} placeholder="Ayush" />
@@ -133,6 +135,16 @@ export default function GeneralSettingsPage() {
               <FormField label="Avatar URL" hint="Upload to Supabase Storage and paste the public URL here">
                 <Input {...register("avatar_url")} type="url" placeholder="https://your-project.supabase.co/storage/v1/object/public/portfolio-assets/avatar.jpg" />
               </FormField>
+              <div className="flex items-center gap-3 py-1">
+                <Switch
+                  checked={isAvatarVisible ?? true}
+                  onCheckedChange={(val) => setValue("is_avatar_visible", val)}
+                />
+                <div>
+                  <p className="text-sm font-medium">Show Avatar</p>
+                  <p className="text-xs text-muted-foreground">Toggle avatar visibility on your portfolio hero & about sections</p>
+                </div>
+              </div>
               <FormField label="Resume URL" hint="Upload your PDF resume and paste the public URL">
                 <Input {...register("resume_url")} type="url" placeholder="https://your-project.supabase.co/storage/v1/object/public/portfolio-assets/resume.pdf" />
               </FormField>

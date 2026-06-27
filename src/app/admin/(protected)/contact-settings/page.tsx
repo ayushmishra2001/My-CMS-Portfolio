@@ -260,7 +260,7 @@ export default function ContactSettingsPage() {
       <Dialog.Root open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-lg border bg-card p-6 shadow-lg">
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg rounded-lg border bg-card p-6 shadow-lg">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <Dialog.Title className="text-base font-semibold">{viewing?.subject ?? "(no subject)"}</Dialog.Title>

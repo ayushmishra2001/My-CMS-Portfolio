@@ -16,6 +16,7 @@ export function TestimonialsSection({ section, settings: _ }: Props) {
     createClient()
       .from("testimonials")
       .select("*")
+      .eq("is_visible", true)
       .order("display_order")
       .then(({ data }) => setItems(data ?? []));
   }, []);

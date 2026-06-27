@@ -4,20 +4,20 @@ import { useForm } from "react-hook-form";
 import { createClient } from "@/lib/supabase/client";
 import { AdminHeader } from "@/components/admin/layout/header";
 import { Button } from "@/components/shared/button";
-import { Input, Textarea, FormField, Card, CardContent, Badge, Switch } from "@/components/shared/form-elements";
+import { Input, Textarea, FormField, Card, CardContent, CardHeader, CardTitle, Badge, Switch } from "@/components/shared/form-elements";
 import { DataTable, Column } from "@/components/admin/ui/data-table";
 import { ConfirmDelete } from "@/components/admin/ui/confirm-delete";
 import { TagInput } from "@/components/admin/ui/tag-input";
-import * as Tabs from "@radix-ui/react-tabs";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Pencil, Trash2, ExternalLink, X, Github, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Pencil, Trash2, ExternalLink, X, Github, Image as ImageIcon, Sparkles } from "lucide-react";
 import { Project, ProjectFormData } from "@/lib/types";
 import toast from "react-hot-toast";
 
-interface ProjectFormInput extends Omit<ProjectFormData, "seo_meta"> {
+interface ProjectFormInput extends Omit<ProjectFormData, "seo_meta" | "is_visible"> {
   seo_title?: string;
   seo_description?: string;
   seo_keywords?: string;
+  is_visible?: boolean;
 }
 
 const defaultForm: ProjectFormInput = {
@@ -26,17 +26,16 @@ const defaultForm: ProjectFormInput = {
   status: "completed", is_featured: false, display_order: 0,
   start_date: null, end_date: null,
   seo_title: "", seo_description: "", seo_keywords: "",
+  is_visible: true,
 };
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [activeTab, setActiveTab] = useState("view");
 
   // GitHub Sync states
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
@@ -56,23 +55,16 @@ export default function ProjectsPage() {
 
   const techStack = watch("tech_stack");
   const isFeatured = watch("is_featured");
+  const isVisible = watch("is_visible");
 
   const fetchProjects = async () => {
     setLoading(true);
-    // Fetch projects along with their multiple gallery images
     const { data } = await supabase.from("projects").select("*, project_images(*)").order("display_order");
     setProjects(data ?? []);
     setLoading(false);
   };
 
   useEffect(() => { fetchProjects(); }, []);
-
-  const openCreate = () => {
-    setEditingId(null);
-    setAdditionalImages([]);
-    reset(defaultForm);
-    setDialogOpen(true);
-  };
 
   const openEdit = (project: Project) => {
     setEditingId(project.id);
@@ -81,11 +73,13 @@ export default function ProjectsPage() {
       seo_title: project.seo_meta?.title || "",
       seo_description: project.seo_meta?.description || "",
       seo_keywords: project.seo_meta?.keywords || "",
+      is_visible: project.is_visible !== false,
     });
-    // Set gallery images
     const images = project.project_images?.map((pi) => pi.image_url) || [];
     setAdditionalImages(images);
-    setDialogOpen(true);
+    
+    // Smooth scroll to form card at top
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const onSubmit = async (data: ProjectFormInput) => {
@@ -101,6 +95,7 @@ export default function ProjectsPage() {
       image_url: data.image_url,
       status: data.status,
       is_featured: data.is_featured,
+      is_visible: data.is_visible !== false,
       display_order: data.display_order,
       start_date: data.start_date,
       end_date: data.end_date,
@@ -116,6 +111,8 @@ export default function ProjectsPage() {
     if (editingId) {
       ({ error } = await supabase.from("projects").update(payload).eq("id", editingId));
     } else {
+      const nextOrder = projects.reduce((max, p) => Math.max(max, p.display_order), -1) + 1;
+      payload.display_order = nextOrder;
       const { data: newProj, error: err } = await supabase.from("projects").insert(payload).select().single();
       error = err;
       if (newProj) projectId = newProj.id;
@@ -142,7 +139,9 @@ export default function ProjectsPage() {
 
     setSaving(false);
     toast.success(editingId ? "Project updated" : "Project created");
-    setDialogOpen(false);
+    setEditingId(null);
+    setAdditionalImages([]);
+    reset(defaultForm);
     fetchProjects();
   };
 
@@ -160,6 +159,39 @@ export default function ProjectsPage() {
   const toggleFeatured = async (project: Project) => {
     await supabase.from("projects").update({ is_featured: !project.is_featured }).eq("id", project.id);
     fetchProjects();
+  };
+
+  const toggleVisible = async (project: Project) => {
+    await supabase.from("projects").update({ is_visible: !project.is_visible }).eq("id", project.id);
+    fetchProjects();
+  };
+
+  const handleReorder = async (draggedId: string, targetId: string) => {
+    const draggedIdx = projects.findIndex((p) => p.id === draggedId);
+    const targetIdx = projects.findIndex((p) => p.id === targetId);
+    if (draggedIdx === -1 || targetIdx === -1) return;
+
+    const newItems = [...projects];
+    const [draggedItem] = newItems.splice(draggedIdx, 1);
+    newItems.splice(targetIdx, 0, draggedItem);
+
+    setProjects(newItems);
+
+    const updates = newItems.map((item, idx) => {
+      const { project_images, ...rest } = item;
+      return {
+        ...rest,
+        display_order: idx,
+      };
+    });
+
+    const { error } = await supabase.from("projects").upsert(updates);
+    if (error) {
+      toast.error("Failed to update order: " + error.message);
+      fetchProjects();
+    } else {
+      toast.success("Order updated");
+    }
   };
 
   // GitHub Repositories Fetch
@@ -193,10 +225,10 @@ export default function ProjectsPage() {
       seo_title: repo.name,
       seo_description: repo.description || "",
       seo_keywords: repo.language ? repo.language.toLowerCase() : "",
+      is_visible: true,
     });
     setAdditionalImages([]);
     setGithubDialogOpen(false);
-    setDialogOpen(true);
     toast.success("Imported repository data! Review and save.");
   };
 
@@ -251,6 +283,12 @@ export default function ProjectsPage() {
       ),
     },
     {
+      key: "is_visible", header: "Visible",
+      cell: (row) => (
+        <Switch checked={row.is_visible} onCheckedChange={() => toggleVisible(row)} />
+      ),
+    },
+    {
       key: "actions", header: "",
       cell: (row) => (
         <div className="flex items-center gap-1 justify-end">
@@ -264,146 +302,37 @@ export default function ProjectsPage() {
 
   return (
     <div className="flex flex-col flex-1 overflow-auto">
-      <AdminHeader
-        title="Projects"
-        description="Manage your portfolio projects"
-        actions={
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => setGithubDialogOpen(true)}>
-              <Github className="h-4 w-4" />Sync GitHub
-            </Button>
-            <Button size="sm" onClick={openCreate}>
-              <Plus className="h-4 w-4" />Add Project
-            </Button>
-          </div>
-        }
-      />
-
-      <div className="p-6">
-        <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-          <Tabs.List className="flex border-b border-border mb-6">
-            {["view", "add"].map((tab) => (
-              <Tabs.Trigger key={tab} value={tab}
-                className="px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors data-[state=active]:border-primary data-[state=active]:text-primary border-transparent text-muted-foreground hover:text-foreground capitalize"
-              >{tab === "add" ? (editingId ? "Edit Project" : "Add Project") : "All Projects"}</Tabs.Trigger>
-            ))}
-          </Tabs.List>
-
-          <Tabs.Content value="view">
-            <DataTable data={projects} columns={columns} searchKeys={["title", "description"]} loading={loading} emptyMessage="No projects yet. Add your first project." />
-          </Tabs.Content>
-
-          <Tabs.Content value="add">
-            <Card><CardContent className="p-6">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 max-w-2xl">
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField label="Title" required error={errors.title?.message} className="col-span-2">
-                    <Input {...register("title", { required: "Title is required" })} placeholder="My Awesome Project" />
-                  </FormField>
-                  <FormField label="Status">
-                    <select {...register("status")} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                      <option value="completed">Completed</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="archived">Archived</option>
-                    </select>
-                  </FormField>
-                  <FormField label="Display Order">
-                    <Input type="number" {...register("display_order", { valueAsNumber: true })} />
-                  </FormField>
-                </div>
-                <FormField label="Short Description">
-                  <Textarea {...register("description")} placeholder="A brief one-line description" rows={2} />
-                </FormField>
-                <FormField label="Full Description">
-                  <Textarea {...register("long_description")} placeholder="Detailed project description..." rows={4} />
-                </FormField>
-                <FormField label="Tech Stack" hint="Type and press Enter to add technologies">
-                  <TagInput value={techStack || []} onChange={(tags) => setValue("tech_stack", tags)} placeholder="React, Node.js, PostgreSQL..." />
-                </FormField>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField label="Live URL">
-                    <Input {...register("live_url")} type="url" placeholder="https://myproject.com" />
-                  </FormField>
-                  <FormField label="GitHub URL">
-                    <Input {...register("github_url")} type="url" placeholder="https://github.com/user/repo" />
-                  </FormField>
-                  <FormField label="Primary Image URL">
-                    <Input {...register("image_url")} type="url" placeholder="https://..." />
-                  </FormField>
-                  <FormField label="Start Date">
-                    <Input {...register("start_date")} type="date" />
-                  </FormField>
-                </div>
-
-                {/* Project Gallery */}
-                <div className="border-t border-border pt-4">
-                  <p className="text-sm font-semibold mb-3 flex items-center gap-1.5"><ImageIcon className="h-4 w-4" />Project Gallery (Additional screenshots)</p>
-                  <div className="flex gap-2 mb-3">
-                    <Input placeholder="Enter screenshot image URL..." value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} />
-                    <Button type="button" variant="outline" size="sm" onClick={addImage}>Add Image</Button>
-                  </div>
-                  {additionalImages.length > 0 && (
-                    <div className="grid grid-cols-2 gap-3 bg-muted/20 p-3 rounded-lg border">
-                      {additionalImages.map((img, idx) => (
-                        <div key={idx} className="relative aspect-video rounded border overflow-hidden group">
-                          <img src={img} alt={`Screenshot ${idx + 1}`} className="object-cover w-full h-full" />
-                          <button type="button" onClick={() => removeImage(idx)} className="absolute top-2 right-2 bg-destructive/80 hover:bg-destructive text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Project SEO */}
-                <div className="border-t border-border pt-4">
-                  <p className="text-sm font-semibold mb-3 flex items-center gap-1.5"><Sparkles className="h-4 w-4" />SEO Meta Settings</p>
-                  <div className="space-y-3">
-                    <FormField label="SEO Meta Title">
-                      <Input {...register("seo_title")} placeholder="Targeted browser title..." />
-                    </FormField>
-                    <FormField label="SEO Meta Description">
-                      <Textarea {...register("seo_description")} placeholder="Short description shown in search results..." rows={2} />
-                    </FormField>
-                    <FormField label="SEO Meta Keywords" hint="Separated by commas">
-                      <Input {...register("seo_keywords")} placeholder="web dev, projects, app..." />
-                    </FormField>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Switch checked={isFeatured} onCheckedChange={(val) => setValue("is_featured", val)} />
-                  <span className="text-sm">Featured project</span>
-                </div>
-                <div className="flex gap-3">
-                  <Button type="submit" loading={saving}>
-                    {editingId ? "Update Project" : "Create Project"}
-                  </Button>
-                  {editingId && (
-                    <Button type="button" variant="outline" onClick={() => { setEditingId(null); reset(defaultForm); setAdditionalImages([]); }}>
-                      Cancel Edit
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </CardContent></Card>
-          </Tabs.Content>
-        </Tabs.Root>
-      </div>
-
-      {/* Edit/Create Dialog */}
-      <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border bg-card p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <Dialog.Title className="text-base font-semibold">{editingId ? "Edit Project" : "New Project"}</Dialog.Title>
-              <Dialog.Close asChild><Button variant="ghost" size="icon" className="h-7 w-7"><X className="h-4 w-4" /></Button></Dialog.Close>
+      <AdminHeader title="Projects" description="Manage your portfolio projects" />
+      
+      <div className="p-6 space-y-6">
+        {/* Upper Half: Form Card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b border-border">
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider">
+              {editingId ? "Edit Project" : "Add New Project"}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              {!editingId && (
+                <Button size="sm" variant="outline" className="h-7 text-xs flex items-center gap-1.5" onClick={() => setGithubDialogOpen(true)}>
+                  <Github className="h-3.5 w-3.5" />Import from GitHub
+                </Button>
+              )}
+              {editingId && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  onClick={() => { setEditingId(null); reset(defaultForm); setAdditionalImages([]); }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField label="Title" required error={errors.title?.message} className="col-span-2">
+          </CardHeader>
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 max-w-6xl">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField label="Title" required error={errors.title?.message} className="md:col-span-2">
                   <Input {...register("title", { required: "Title is required" })} placeholder="My Awesome Project" />
                 </FormField>
                 <FormField label="Status">
@@ -413,71 +342,125 @@ export default function ProjectsPage() {
                     <option value="archived">Archived</option>
                   </select>
                 </FormField>
-                <FormField label="Display Order">
-                  <Input type="number" {...register("display_order", { valueAsNumber: true })} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField label="Short Description">
+                  <Textarea {...register("description")} placeholder="A brief one-line description" rows={2} />
+                </FormField>
+                <FormField label="Tech Stack" hint="Type and press Enter to add technologies">
+                  <TagInput value={techStack || []} onChange={(tags) => setValue("tech_stack", tags)} placeholder="React, Node.js, PostgreSQL..." />
                 </FormField>
               </div>
-              <FormField label="Short Description">
-                <Textarea {...register("description")} rows={2} />
+
+              <FormField label="Full Description">
+                <Textarea {...register("long_description")} placeholder="Detailed project description..." rows={3} />
               </FormField>
-              <FormField label="Tech Stack">
-                <TagInput value={techStack || []} onChange={(tags) => setValue("tech_stack", tags)} />
-              </FormField>
-              <div className="grid grid-cols-2 gap-4">
-                <FormField label="Live URL"><Input {...register("live_url")} type="url" /></FormField>
-                <FormField label="GitHub URL"><Input {...register("github_url")} type="url" /></FormField>
-                <FormField label="Primary Image URL"><Input {...register("image_url")} type="url" /></FormField>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <FormField label="Live URL">
+                  <Input {...register("live_url")} type="url" placeholder="https://myproject.com" />
+                </FormField>
+                <FormField label="GitHub URL">
+                  <Input {...register("github_url")} type="url" placeholder="https://github.com/user/repo" />
+                </FormField>
+                <FormField label="Primary Image URL">
+                  <Input {...register("image_url")} type="url" placeholder="https://..." />
+                </FormField>
+                <FormField label="Start Date">
+                  <Input {...register("start_date")} type="date" />
+                </FormField>
               </div>
 
-              {/* Gallery */}
+              {/* Project Gallery */}
               <div className="border-t border-border pt-4">
-                <p className="text-xs font-semibold mb-2 flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" />Project Gallery ( screenshots )</p>
-                <div className="flex gap-2 mb-2">
-                  <Input placeholder="Screenshot URL..." value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} />
-                  <Button type="button" variant="outline" size="sm" onClick={addImage}>Add</Button>
-                </div>
-                {additionalImages.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 bg-muted/20 p-2 rounded border max-h-40 overflow-y-auto">
-                    {additionalImages.map((img, idx) => (
-                      <div key={idx} className="relative aspect-video rounded border overflow-hidden group">
-                        <img src={img} alt="" className="object-cover w-full h-full" />
-                        <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-destructive/80 p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                          <X className="h-3 w-3 text-white" />
-                        </button>
+                <p className="text-sm font-semibold mb-3 flex items-center gap-1.5"><ImageIcon className="h-4 w-4" />Project Gallery (Additional screenshots)</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <FormField label="Screenshot Image URL" hint="Enter URL and click Add">
+                      <div className="flex gap-2">
+                        <Input placeholder="Enter screenshot image URL..." value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} />
+                        <Button type="button" variant="outline" size="sm" onClick={addImage}>Add Image</Button>
                       </div>
-                    ))}
+                    </FormField>
                   </div>
-                )}
-              </div>
-
-              {/* SEO settings */}
-              <div className="border-t border-border pt-4">
-                <p className="text-xs font-semibold mb-2 flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" />SEO Metadata</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField label="SEO Title" className="col-span-2"><Input {...register("seo_title")} /></FormField>
-                  <FormField label="SEO Keywords" className="col-span-2"><Input {...register("seo_keywords")} /></FormField>
-                  <FormField label="SEO Description" className="col-span-2"><Textarea {...register("seo_description")} rows={2} /></FormField>
+                  <div>
+                    {additionalImages.length > 0 ? (
+                      <div className="grid grid-cols-3 gap-2 bg-muted/20 p-2 rounded-lg border max-h-[120px] overflow-y-auto">
+                        {additionalImages.map((img, idx) => (
+                          <div key={idx} className="relative aspect-video rounded border overflow-hidden group">
+                            <img src={img} alt="" className="object-cover w-full h-full" />
+                            <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-destructive/80 hover:bg-destructive text-white p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground py-6 text-center border border-dashed rounded-lg">No additional screenshots added.</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Switch checked={isFeatured} onCheckedChange={(val) => setValue("is_featured", val)} />
-                <span className="text-sm">Featured project</span>
+              {/* Project SEO */}
+              <div className="border-t border-border pt-4">
+                <p className="text-sm font-semibold mb-3 flex items-center gap-1.5"><Sparkles className="h-4 w-4" />SEO Meta Settings</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField label="SEO Meta Title">
+                    <Input {...register("seo_title")} placeholder="Targeted browser title..." />
+                  </FormField>
+                  <FormField label="SEO Meta Keywords" hint="Separated by commas">
+                    <Input {...register("seo_keywords")} placeholder="web dev, projects, app..." />
+                  </FormField>
+                  <FormField label="SEO Meta Description">
+                    <Textarea {...register("seo_description")} placeholder="Short description..." rows={1} className="min-h-[38px] resize-none" />
+                  </FormField>
+                </div>
               </div>
-              <div className="flex gap-3 pt-2">
-                <Button type="submit" loading={saving}>{editingId ? "Update" : "Create"}</Button>
-                <Dialog.Close asChild><Button type="button" variant="outline">Cancel</Button></Dialog.Close>
+
+              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-3">
+                    <Switch checked={isFeatured} onCheckedChange={(val) => setValue("is_featured", val)} />
+                    <span className="text-sm">Featured project</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Switch checked={isVisible ?? true} onCheckedChange={(val) => setValue("is_visible", val)} />
+                    <span className="text-sm">Visible</span>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  {editingId && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => { setEditingId(null); reset(defaultForm); setAdditionalImages([]); }}>
+                      Cancel
+                    </Button>
+                  )}
+                  <Button type="submit" size="sm" loading={saving}>
+                    {editingId ? "Save Changes" : "Save Project"}
+                  </Button>
+                </div>
               </div>
             </form>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+          </CardContent>
+        </Card>
+
+        {/* Bottom Half: Table Card */}
+        <Card>
+          <CardHeader className="border-b border-border">
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider">All Projects</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <DataTable data={projects} columns={columns} searchKeys={["title", "description"]} loading={loading} emptyMessage="No projects yet. Add your first project." onReorder={handleReorder} />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* GitHub Sync Dialog */}
       <Dialog.Root open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-lg border bg-card p-6 shadow-lg max-h-[80vh] flex flex-col">
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg rounded-lg border bg-card p-6 shadow-lg max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between mb-4 shrink-0">
               <Dialog.Title className="text-base font-semibold flex items-center gap-2">
                 <Github className="h-5 w-5" />Import from GitHub

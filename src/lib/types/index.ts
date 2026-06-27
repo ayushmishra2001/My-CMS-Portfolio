@@ -19,6 +19,7 @@ export interface SiteSettings {
   phone: string | null;
   location: string | null;
   available_for_work: boolean;
+  is_avatar_visible: boolean;
   social_links: {
     github: string;
     linkedin: string;
@@ -80,6 +81,7 @@ export interface Project {
   image_url: string | null;
   status: ProjectStatus;
   is_featured: boolean;
+  is_visible: boolean;
   display_order: number;
   start_date: string | null;
   end_date: string | null;
@@ -101,6 +103,7 @@ export interface Skill {
   icon_name: string | null;
   years_experience: number | null;
   display_order: number;
+  is_visible: boolean;
   created_at: string;
 }
 
@@ -114,6 +117,7 @@ export interface Experience {
   start_date: string;
   end_date: string | null;
   is_current: boolean;
+  is_visible: boolean;
   description: string | null;
   achievements: string[] | null;
   tech_used: string[];
@@ -132,6 +136,7 @@ export interface Education {
   start_date: string | null;
   end_date: string | null;
   is_current: boolean;
+  is_visible: boolean;
   grade: string | null;
   description: string | null;
   display_order: number;
@@ -148,6 +153,7 @@ export interface Certification {
   credential_url: string | null;
   image_url: string | null;
   skills: string[];
+  is_visible: boolean;
   display_order: number;
   created_at: string;
 }
@@ -161,6 +167,7 @@ export interface Testimonial {
   content: string;
   rating: number;
   is_featured: boolean;
+  is_visible: boolean;
   display_order: number;
   created_at: string;
 }
@@ -191,6 +198,7 @@ export interface BlogPost {
   excerpt: string | null;
   cover_image: string | null;
   is_published: boolean;
+  is_visible: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;
