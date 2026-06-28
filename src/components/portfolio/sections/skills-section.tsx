@@ -30,7 +30,7 @@ export function SkillsSection({ section, settings: _ }: Props) {
   }, []);
 
   const grouped = skills.reduce<Record<string, Skill[]>>((acc, skill) => {
-    const cat = skill.category || "General";
+    const cat = (skill.category || "General").trim().toUpperCase();
     return { ...acc, [cat]: [...(acc[cat] ?? []), skill] };
   }, {});
 

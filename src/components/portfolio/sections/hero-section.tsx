@@ -35,7 +35,7 @@ export function HeroSection({ section, settings }: Props) {
           <div className="flex flex-col justify-between lg:border-r border-border border-b lg:border-b-0">
             
             {/* Compartment A: Identity Header */}
-            <div className="p-6 md:p-10 flex flex-col justify-center flex-grow space-y-6 min-h-[350px] relative overflow-hidden">
+            <div className="flex flex-col justify-center flex-grow min-h-[350px] relative overflow-hidden">
               {/* Cyber Blueprint Grid Background */}
               <div 
                 className="absolute inset-0 opacity-[0.035] pointer-events-none" 
@@ -47,13 +47,14 @@ export function HeroSection({ section, settings }: Props) {
                   backgroundSize: '36px 36px'
                 }}
               />
-              <div className="space-y-4 relative z-10">
+              {/* Text Container */}
+              <div className="p-6 md:p-10 space-y-4 relative z-10 pr-[44%] sm:pr-[40%] lg:pr-0 flex-grow flex flex-col justify-center">
                 <span className="font-mono text-[9px] tracking-widest text-primary uppercase block">
                   [ 01_PRINCIPAL_IDENTITY ]
                 </span>
                 <h1 
                   style={{ fontFamily: '"Victory Striker Sans Demo", "Victory Striker", sans-serif' }}
-                  className="text-5xl sm:text-7xl md:text-8xl font-black uppercase tracking-tighter leading-[0.8] text-foreground select-none"
+                  className="text-[10vw] sm:text-7xl md:text-8xl font-black uppercase tracking-tighter leading-[0.8] text-foreground select-none"
                 >
                   {settings.display_name as string || settings.full_name as string || "Your Name"}
                 </h1>
@@ -72,6 +73,33 @@ export function HeroSection({ section, settings }: Props) {
                   </p>
                 )}
               </div>
+
+              {/* Mobile Avatar (Visible only on mobile/tablet, hidden on lg desktop screens) */}
+              {showAvatar && (
+                <div className="lg:hidden absolute inset-y-0 right-0 w-[42%] sm:w-[37%] border-l border-border bg-accent/5 overflow-hidden">
+                  <Image
+                    src={avatarUrl as string}
+                    alt={settings.display_name as string || "Avatar"}
+                    fill
+                    className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
+                    sizes="(max-w-1024px) 42vw, 18.5vw"
+                    priority
+                  />
+                  
+                  {/* Legibility Gradient */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+                  
+                  {/* Specs Overlays on Image (Mobile specific) */}
+                  <div className="absolute bottom-6 left-3 z-10 font-mono text-white text-[7.5px] space-y-1 select-none leading-normal">
+                    <div>
+                      <span className="text-white/60">LOC:</span> {settings.location as string || "GLOBAL"}
+                    </div>
+                    <div>
+                      <span className="text-white/60">COOR:</span> 28.61° N
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Compartment B: Metadata Split Block */}
@@ -140,13 +168,13 @@ export function HeroSection({ section, settings }: Props) {
           <div className="flex flex-col justify-between">
             {/* Compartment A: Tall Aspect Ratio Avatar Container */}
             {showAvatar ? (
-              <div className="relative w-full overflow-hidden border-b border-border bg-accent/5" style={{ aspectRatio: '8/20' }}>
+              <div className="hidden lg:block relative w-full overflow-hidden border-b border-border bg-accent/5" style={{ aspectRatio: '8/20' }}>
                 <Image
                   src={avatarUrl as string}
                   alt={settings.display_name as string || "Avatar"}
                   fill
                   className="object-cover grayscale hover:grayscale-0 transition-all duration-1000 ease-in-out scale-100 hover:scale-102"
-                  sizes="(max-w-1024px) 100vw, 18.5vw"
+                  sizes="(max-w-1024px) 35vw, 18.5vw"
                   priority
                 />
                 
@@ -167,7 +195,7 @@ export function HeroSection({ section, settings }: Props) {
                 </div>
               </div>
             ) : (
-              <div className="flex-grow flex flex-col justify-between p-6 min-h-[350px] border-b border-border bg-accent/5 relative overflow-hidden">
+              <div className="hidden lg:flex flex-grow flex-col justify-between p-6 min-h-[350px] border-b border-border bg-accent/5 relative overflow-hidden">
                 <span className="font-mono text-[9px] tracking-widest text-muted-foreground uppercase">[ SCHEMATIC_GRID ]</span>
                 <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
                   <div className="w-full h-full border border-foreground grid grid-cols-6 grid-rows-6">

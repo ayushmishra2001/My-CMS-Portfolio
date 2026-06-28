@@ -148,6 +148,15 @@ export default function SkillsPage() {
     },
   ];
 
+  const uniqueCategories = Array.from(
+    new Set(
+      skills
+        .map((s) => s.category)
+        .filter((cat): cat is string => typeof cat === "string" && cat.trim().length > 0)
+        .map((cat) => cat.trim())
+    )
+  ).sort();
+
   return (
     <div className="flex flex-col flex-1 overflow-auto">
       <AdminHeader title="Skills" description="Manage your technical skills" />
@@ -175,8 +184,17 @@ export default function SkillsPage() {
                 <FormField label="Skill Name" required error={errors.name?.message}>
                   <Input {...register("name", { required: "Name is required" })} placeholder="React" />
                 </FormField>
-                <FormField label="Category" required>
-                  <Input {...register("category", { required: true })} placeholder="Frontend" />
+                <FormField label="Category" required error={errors.category?.message}>
+                  <Input 
+                    list="skills-categories" 
+                    {...register("category", { required: "Category is required" })} 
+                    placeholder="Frontend" 
+                  />
+                  <datalist id="skills-categories">
+                    {uniqueCategories.map((cat) => (
+                      <option key={cat} value={cat} />
+                    ))}
+                  </datalist>
                 </FormField>
                 <FormField label="Proficiency (1–5)">
                   <div className="space-y-1 pt-1.5">

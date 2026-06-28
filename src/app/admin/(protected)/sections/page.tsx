@@ -137,7 +137,7 @@ export default function SectionsPage() {
     if (!editingSection) return;
     
     let finalContent = editingContent;
-    const standardTypes = ["hero", "about", "projects", "skills", "experience", "education", "certifications", "testimonials", "contact"];
+    const standardTypes = ["hero", "about", "projects", "skills", "experience", "education", "certifications", "testimonials", "contact", "blog_posts"];
     if (editingSection.type === "custom" || !standardTypes.includes(editingSection.type)) {
       try {
         finalContent = JSON.parse(rawJsonText);
