@@ -13,10 +13,14 @@ import { Experience, ExperienceFormData } from "@/lib/types";
 import { formatDateRange } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-const defaultForm: ExperienceFormData = {
+interface ExperienceFormInput extends Omit<ExperienceFormData, "achievements"> {
+  achievementsText?: string;
+}
+
+const defaultForm: ExperienceFormInput = {
   role: "", company: "", company_url: null, location: null,
   employment_type: "Full-time", start_date: "", end_date: null,
-  is_current: false, description: null, achievements: null,
+  is_current: false, description: null, achievementsText: "",
   tech_used: [], display_order: 0,
   is_visible: true,
 };
@@ -30,7 +34,7 @@ export default function ExperiencePage() {
   const [deleting, setDeleting] = useState(false);
   const supabase = createClient();
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<ExperienceFormData>({ defaultValues: defaultForm });
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<ExperienceFormInput>({ defaultValues: defaultForm });
   const isCurrent = watch("is_current");
   const techUsed = watch("tech_used");
 
@@ -45,15 +49,35 @@ export default function ExperiencePage() {
 
   const openEdit = (item: Experience) => {
     setEditingId(item.id);
-    reset({ ...item });
+    reset({ 
+      ...item,
+      achievementsText: item.achievements ? item.achievements.join("\n") : ""
+    });
     
     // Scroll to top form
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const onSubmit = async (data: ExperienceFormData) => {
+  const onSubmit = async (data: ExperienceFormInput) => {
     setSaving(true);
-    const payload = { ...data, end_date: data.is_current ? null : data.end_date };
+    const achievementsList = data.achievementsText
+      ? data.achievementsText.split("\n").map(l => l.trim()).filter(Boolean)
+      : [];
+    const payload = {
+      role: data.role,
+      company: data.company,
+      company_url: data.company_url,
+      location: data.location,
+      employment_type: data.employment_type,
+      start_date: data.start_date,
+      end_date: data.is_current ? null : data.end_date,
+      is_current: data.is_current,
+      description: data.description,
+      achievements: achievementsList.length > 0 ? achievementsList : null,
+      tech_used: data.tech_used,
+      display_order: data.display_order,
+      is_visible: data.is_visible,
+    };
     let error;
     if (editingId) {
       ({ error } = await supabase.from("experience").update(payload).eq("id", editingId));
@@ -205,6 +229,11 @@ export default function ExperiencePage() {
                 <div className="md:col-span-3">
                   <FormField label="Description">
                     <Textarea {...register("description")} rows={2} placeholder="Describe your responsibilities and impact..." />
+                  </FormField>
+                </div>
+                <div className="md:col-span-3">
+                  <FormField label="Achievements / Deliverables" hint="Enter one achievement per line. These will be formatted as a numbered list.">
+                    <Textarea {...register("achievementsText")} rows={4} placeholder="Reduced API latency by 40% using Redis caching&#10;Led a team of 4 engineers to rebuild the analytics dashboard" />
                   </FormField>
                 </div>
               </div>

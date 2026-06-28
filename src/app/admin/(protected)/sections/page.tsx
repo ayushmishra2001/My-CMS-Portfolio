@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AdminHeader } from "@/components/admin/layout/header";
 import { Button } from "@/components/shared/button";
-import { Badge, Switch, Card, CardContent } from "@/components/shared/form-elements";
+import { Badge, Switch, Card, CardContent, Input, Textarea, FormField } from "@/components/shared/form-elements";
 import { ConfirmDelete } from "@/components/admin/ui/confirm-delete";
-import { GripVertical, ChevronUp, ChevronDown, Eye, EyeOff, History } from "lucide-react";
+import { GripVertical, ChevronUp, ChevronDown, Eye, EyeOff, History, Pencil } from "lucide-react";
 import { Section, SectionType } from "@/lib/types";
 import toast from "react-hot-toast";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -35,11 +35,38 @@ export default function SectionsPage() {
   const [deleting, setDeleting] = useState(false);
   const [historySection, setHistorySection] = useState<Section | null>(null);
   const [history, setHistory] = useState<{ id: string; saved_at: string; content: Record<string, unknown> }[]>([]);
+  
+  // Section content editor states
+  const [editingSection, setEditingSection] = useState<Section | null>(null);
+  const [editingContent, setEditingContent] = useState<Record<string, any>>({});
+  const [savingContent, setSavingContent] = useState(false);
+  const [rawJsonText, setRawJsonText] = useState("");
+
   const supabase = createClient();
 
   const fetchSections = async () => {
     setLoading(true);
     const { data } = await supabase.from("sections").select("*").order("display_order");
+    
+    // Auto-seed blog_posts row if it is missing from database
+    if (data && !data.some((s) => s.type === "blog_posts")) {
+      const nextOrder = data.reduce((max, s) => Math.max(max, s.display_order), -1) + 1;
+      const { error } = await supabase.from("sections").insert({
+        type: "blog_posts",
+        label: "Blog",
+        subtitle: "Articles & Insights",
+        display_order: nextOrder,
+        is_visible: false,
+        content: { max_items: 3, show_date: true }
+      });
+      if (!error) {
+        const { data: updatedData } = await supabase.from("sections").select("*").order("display_order");
+        setSections(updatedData ?? []);
+        setLoading(false);
+        return;
+      }
+    }
+
     setSections(data ?? []);
     setLoading(false);
   };
@@ -93,6 +120,43 @@ export default function SectionsPage() {
     if (error) { toast.error(error.message); return; }
     toast.success("Version restored");
     setHistorySection(null);
+    fetchSections();
+  };
+
+  const openEditContent = (section: Section) => {
+    setEditingSection(section);
+    setEditingContent(section.content || {});
+    setRawJsonText(JSON.stringify(section.content || {}, null, 2));
+  };
+
+  const updateField = (key: string, value: any) => {
+    setEditingContent((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const saveSectionContent = async () => {
+    if (!editingSection) return;
+    
+    let finalContent = editingContent;
+    const standardTypes = ["hero", "about", "projects", "skills", "experience", "education", "certifications", "testimonials", "contact"];
+    if (editingSection.type === "custom" || !standardTypes.includes(editingSection.type)) {
+      try {
+        finalContent = JSON.parse(rawJsonText);
+      } catch (err) {
+        toast.error("Invalid JSON configuration. Please check your syntax.");
+        return;
+      }
+    }
+
+    setSavingContent(true);
+    const { error } = await supabase
+      .from("sections")
+      .update({ content: finalContent })
+      .eq("id", editingSection.id);
+    setSavingContent(false);
+    
+    if (error) { toast.error(error.message); return; }
+    toast.success("Section content saved");
+    setEditingSection(null);
     fetchSections();
   };
 
@@ -184,6 +248,17 @@ export default function SectionsPage() {
                   />
                 </div>
 
+                 {/* Edit Content */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 text-primary hover:text-primary/80"
+                  title="Edit content"
+                  onClick={() => openEditContent(section)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+
                 {/* History */}
                 <Button
                   variant="ghost"
@@ -239,6 +314,260 @@ export default function SectionsPage() {
                 ))}
               </div>
             )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Section Content Edit Dialog */}
+      <Dialog.Root open={!!editingSection} onOpenChange={(o) => !o && setEditingSection(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-2xl rounded-lg border bg-card p-6 shadow-lg overflow-y-auto max-h-[85vh]">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
+              <div>
+                <Dialog.Title className="text-base font-semibold">Edit Section Content</Dialog.Title>
+                <p className="text-xs text-muted-foreground">{editingSection?.label} ({editingSection?.type})</p>
+              </div>
+              <Dialog.Close asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7"><X className="h-4 w-4" /></Button>
+              </Dialog.Close>
+            </div>
+
+            <div className="space-y-4 py-2">
+              {editingSection?.type === "hero" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Headline">
+                      <Input 
+                        value={editingContent.headline || ""} 
+                        onChange={(e) => updateField("headline", e.target.value)} 
+                        placeholder="I build high-performance backend systems" 
+                      />
+                    </FormField>
+                    <FormField label="Subheading">
+                      <Input 
+                        value={editingContent.subheading || ""} 
+                        onChange={(e) => updateField("subheading", e.target.value)} 
+                        placeholder="Specializing in Java & Spring Boot" 
+                      />
+                    </FormField>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField label="CTA Primary Text">
+                      <Input 
+                        value={editingContent.cta_primary_text || ""} 
+                        onChange={(e) => updateField("cta_primary_text", e.target.value)} 
+                        placeholder="View Projects" 
+                      />
+                    </FormField>
+                    <FormField label="CTA Primary URL">
+                      <Input 
+                        value={editingContent.cta_primary_url || ""} 
+                        onChange={(e) => updateField("cta_primary_url", e.target.value)} 
+                        placeholder="#projects" 
+                      />
+                    </FormField>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField label="CTA Secondary Text">
+                      <Input 
+                        value={editingContent.cta_secondary_text || ""} 
+                        onChange={(e) => updateField("cta_secondary_text", e.target.value)} 
+                        placeholder="Download Resume" 
+                      />
+                    </FormField>
+                    <FormField label="CTA Secondary URL">
+                      <Input 
+                        value={editingContent.cta_secondary_url || ""} 
+                        onChange={(e) => updateField("cta_secondary_url", e.target.value)} 
+                        placeholder="#contact" 
+                      />
+                    </FormField>
+                  </div>
+                  <div className="flex items-center gap-6 pt-2">
+                    <div className="flex items-center gap-3">
+                      <Switch 
+                        checked={editingContent.show_avatar !== false} 
+                        onCheckedChange={(val) => updateField("show_avatar", val)} 
+                      />
+                      <span className="text-xs font-medium">Show Avatar</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch 
+                        checked={editingContent.show_social_links !== false} 
+                        onCheckedChange={(val) => updateField("show_social_links", val)} 
+                      />
+                      <span className="text-xs font-medium">Show Social Links</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {editingSection?.type === "about" && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3">
+                      <Switch 
+                        checked={editingContent.show_photo !== false} 
+                        onCheckedChange={(val) => updateField("show_photo", val)} 
+                      />
+                      <span className="text-xs font-medium">Show Biography Photo</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch 
+                        checked={editingContent.show_resume_button !== false} 
+                        onCheckedChange={(val) => updateField("show_resume_button", val)} 
+                      />
+                      <span className="text-xs font-medium">Show Resume Button</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {editingSection?.type === "projects" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Layout Mode">
+                      <select 
+                        value={editingContent.layout || "grid"} 
+                        onChange={(e) => updateField("layout", e.target.value)}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      >
+                        <option value="grid">Grid / Table Mode</option>
+                        <option value="list">List / Row Mode</option>
+                      </select>
+                    </FormField>
+                    <FormField label="Maximum Items to Display">
+                      <Input 
+                        type="number" 
+                        value={editingContent.max_items || 6} 
+                        onChange={(e) => updateField("max_items", parseInt(e.target.value) || 6)} 
+                        placeholder="6" 
+                      />
+                    </FormField>
+                  </div>
+                  <div className="flex items-center gap-3 pt-2">
+                    <Switch 
+                      checked={editingContent.show_featured_only === true} 
+                      onCheckedChange={(val) => updateField("show_featured_only", val)} 
+                    />
+                    <span className="text-xs font-medium">Show Featured Projects Only</span>
+                  </div>
+                </div>
+              )}
+
+              {editingSection?.type === "skills" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Display Style">
+                      <select 
+                        value={editingContent.display_style || "tags"} 
+                        onChange={(e) => updateField("display_style", e.target.value)}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      >
+                        <option value="tags">Tags (Periodic Matrix)</option>
+                        <option value="progress">Proficiency (LED Indicators)</option>
+                      </select>
+                    </FormField>
+                  </div>
+                  <div className="flex items-center gap-3 pt-2">
+                    <Switch 
+                      checked={editingContent.group_by_category !== false} 
+                      onCheckedChange={(val) => updateField("group_by_category", val)} 
+                    />
+                    <span className="text-xs font-medium">Group Skills by Category Ledger</span>
+                  </div>
+                </div>
+              )}
+
+              {["experience", "education", "certifications", "testimonials"].includes(editingSection?.type || "") && (
+                <div className="space-y-4">
+                  <FormField label="Layout Mode">
+                    <select 
+                      value={editingContent.layout || "grid"} 
+                      onChange={(e) => updateField("layout", e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      {editingSection?.type === "experience" && <option value="timeline">Stark Typographic timeline</option>}
+                      {editingSection?.type === "education" && <option value="cards">Academic Ledger</option>}
+                      {editingSection?.type === "certifications" && <option value="grid">Credential Matrix</option>}
+                      {editingSection?.type === "testimonials" && <option value="carousel">Typographic Pull-Quote Ledger</option>}
+                    </select>
+                  </FormField>
+                </div>
+              )}
+
+              {editingSection?.type === "contact" && (
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <Switch 
+                        checked={editingContent.show_form !== false} 
+                        onCheckedChange={(val) => updateField("show_form", val)} 
+                      />
+                      <span className="text-xs font-medium">Show Contact Message Form</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch 
+                        checked={editingContent.show_email !== false} 
+                        onCheckedChange={(val) => updateField("show_email", val)} 
+                      />
+                      <span className="text-xs font-medium">Show Email Envelope Card</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch 
+                        checked={editingContent.show_social !== false} 
+                        onCheckedChange={(val) => updateField("show_social", val)} 
+                      />
+                      <span className="text-xs font-medium">Show Social Signals Matrix Grid</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {editingSection?.type === "blog_posts" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Maximum Items to Display">
+                      <Input 
+                        type="number" 
+                        value={editingContent.max_items || 3} 
+                        onChange={(e) => updateField("max_items", parseInt(e.target.value) || 3)} 
+                        placeholder="3" 
+                      />
+                    </FormField>
+                  </div>
+                  <div className="flex items-center gap-3 pt-2">
+                    <Switch 
+                      checked={editingContent.show_date !== false} 
+                      onCheckedChange={(val) => updateField("show_date", val)} 
+                    />
+                    <span className="text-xs font-medium">Show Publication Dates</span>
+                  </div>
+                </div>
+              )}
+
+              {editingSection && (editingSection.type === "custom" || !["hero", "about", "projects", "skills", "experience", "education", "certifications", "testimonials", "contact", "blog_posts"].includes(editingSection.type)) && (
+                <div className="space-y-4">
+                  <FormField label="Raw JSON Configuration" hint="Valid JSON representing custom settings for this section">
+                    <Textarea 
+                      rows={8}
+                      value={rawJsonText} 
+                      onChange={(e) => setRawJsonText(e.target.value)} 
+                      className="font-mono text-xs" 
+                    />
+                  </FormField>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-border mt-6">
+              <Dialog.Close asChild>
+                <Button variant="outline" size="sm">Cancel</Button>
+              </Dialog.Close>
+              <Button size="sm" loading={savingContent} onClick={saveSectionContent}>
+                Save Changes
+              </Button>
+            </div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

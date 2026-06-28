@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PortfolioNav } from "@/components/portfolio/shared/nav";
 import { PortfolioFooter } from "@/components/portfolio/shared/footer";
 import { AnalyticsTracker } from "@/components/portfolio/shared/tracker";
+import { BackToTopButton } from "@/components/portfolio/shared/back-to-top";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,6 +41,7 @@ export default async function PortfolioLayout({ children }: { children: React.Re
       />
       <main>{children}</main>
       <PortfolioFooter name={settings?.full_name || "Portfolio"} />
+      <BackToTopButton />
     </div>
   );
 }

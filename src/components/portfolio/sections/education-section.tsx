@@ -20,45 +20,90 @@ export function EducationSection({ section, settings: _ }: Props) {
       .then(({ data }) => setItems(data ?? []));
   }, []);
 
+  const getYearString = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "XXXX";
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? "XXXX" : date.getFullYear().toString();
+  };
+
   return (
     <SectionWrapper section={section}>
       <SectionHeading title={section.label} subtitle={section.subtitle} />
-      <div className="grid md:grid-cols-2 gap-6">
-        {items.map((item) => (
-          <div key={item.id} className="rounded-xl border border-border bg-card p-6 hover:border-primary/50 transition-colors">
-            <div className="flex items-start justify-between gap-4 mb-3">
-              <div>
-                <h3 className="font-semibold">{item.degree} in {item.field}</h3>
-                <div className="flex items-center gap-1.5 mt-1">
-                  {item.institution_url ? (
-                    <a href={item.institution_url} target="_blank" rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline flex items-center gap-1">
-                      {item.institution} <ExternalLink className="h-3 w-3" />
-                    </a>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">{item.institution}</span>
+      <div className="border-t border-border bg-background transition-colors duration-300 w-full flex flex-col">
+        {items.map((item) => {
+          const startYear = getYearString(item.start_date);
+          const endYear = item.is_current ? "PRES" : getYearString(item.end_date);
+
+          return (
+            <div 
+              key={item.id} 
+              className="border-b border-border py-8 md:py-12 px-4 md:px-8 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 hover:bg-accent/5 transition-colors duration-300"
+            >
+              {/* Year/Date Structural Anchor Column */}
+              <div className="col-span-1 md:col-span-4 flex flex-col justify-start space-y-2">
+                <div className="font-mono text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tighter leading-none uppercase select-none">
+                  {startYear} <span className="text-muted-foreground/30">//</span> {endYear}
+                </div>
+                <div className="space-y-1 font-mono">
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                    {formatDateRange(item.start_date, item.end_date, item.is_current)}
+                  </div>
+                  {item.grade && (
+                    <div className="text-[9px] text-primary uppercase font-bold tracking-widest">
+                      [ GRADE // {item.grade} ]
+                    </div>
+                  )}
+                  <div className="text-[9px] text-muted-foreground/60 uppercase tracking-widest">
+                    [ RECORD // EDUCATION ]
+                  </div>
+                </div>
+              </div>
+
+              {/* Degree, Institution & Description Column */}
+              <div className="col-span-1 md:col-span-8 flex flex-col justify-between">
+                <div>
+                  {/* Imposing Degree Title */}
+                  <div>
+                    <h3 className="text-lg md:text-2xl font-black uppercase tracking-tight text-foreground leading-tight">
+                      {item.degree} <span className="text-muted-foreground/40 font-light">IN</span> {item.field}
+                    </h3>
+                    
+                    <div className="flex flex-wrap items-center gap-3 mt-2 font-mono text-[11px] uppercase text-muted-foreground">
+                      {item.institution_url ? (
+                        <a 
+                          href={item.institution_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-primary hover:text-primary/80 hover:underline inline-flex items-center gap-1 font-semibold"
+                        >
+                          {item.institution} <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="font-semibold text-foreground/80">{item.institution}</span>
+                      )}
+                      {item.location && (
+                        <>
+                          <span className="text-muted-foreground/30">•</span>
+                          <span className="flex items-center gap-1 text-xs">
+                            <MapPin className="h-3 w-3 text-muted-foreground/60" />
+                            {item.location}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  {item.description && (
+                    <p className="text-sm text-foreground/80 leading-relaxed font-light mt-4 max-w-2xl">
+                      {item.description}
+                    </p>
                   )}
                 </div>
-                {item.location && (
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />{item.location}
-                  </p>
-                )}
               </div>
-              {item.grade && (
-                <span className="text-xs font-medium px-2 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
-                  {item.grade}
-                </span>
-              )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {formatDateRange(item.start_date, item.end_date, item.is_current)}
-            </p>
-            {item.description && (
-              <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{item.description}</p>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </SectionWrapper>
   );

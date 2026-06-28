@@ -14,6 +14,10 @@ export interface SiteSettings {
   tagline: string;
   bio: string;
   avatar_url: string | null;
+  hero_avatar_url: string | null;
+  is_hero_avatar_visible: boolean;
+  about_avatar_url: string | null;
+  is_about_avatar_visible: boolean;
   resume_url: string | null;
   email: string | null;
   phone: string | null;

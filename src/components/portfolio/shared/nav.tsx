@@ -34,6 +34,8 @@ export function PortfolioNav({ name, sections }: NavProps) {
   };
 
   const isHome = pathname === "/";
+  const visibleSections = sections.filter((s) => s.type !== "blog_posts");
+  const hasBlog = sections.some((s) => s.type === "blog_posts");
 
   return (
     <header
@@ -50,7 +52,7 @@ export function PortfolioNav({ name, sections }: NavProps) {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
-          {sections.map((s) => (
+          {visibleSections.map((s) => (
             isHome ? (
               <button
                 key={s.type}
@@ -69,15 +71,17 @@ export function PortfolioNav({ name, sections }: NavProps) {
               </Link>
             )
           ))}
-          <Link
-            href="/blog"
-            className={cn(
-              "text-sm font-semibold transition-colors",
-              pathname.startsWith("/blog") ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Blog
-          </Link>
+          {hasBlog && (
+            <Link
+              href="/blog"
+              className={cn(
+                "text-sm font-semibold transition-colors",
+                pathname.startsWith("/blog") ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Blog
+            </Link>
+          )}
         </nav>
 
         {/* Mobile hamburger */}
@@ -93,7 +97,7 @@ export function PortfolioNav({ name, sections }: NavProps) {
       {menuOpen && (
         <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md">
           <nav className="flex flex-col px-6 py-4 gap-4">
-            {sections.map((s) => (
+            {visibleSections.map((s) => (
               isHome ? (
                 <button
                   key={s.type}
@@ -113,16 +117,18 @@ export function PortfolioNav({ name, sections }: NavProps) {
                 </Link>
               )
             ))}
-            <Link
-              href="/blog"
-              onClick={() => setMenuOpen(false)}
-              className={cn(
-                "text-sm font-semibold transition-colors",
-                pathname.startsWith("/blog") ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Blog
-            </Link>
+            {hasBlog && (
+              <Link
+                href="/blog"
+                onClick={() => setMenuOpen(false)}
+                className={cn(
+                  "text-sm font-semibold transition-colors",
+                  pathname.startsWith("/blog") ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Blog
+              </Link>
+            )}
           </nav>
         </div>
       )}

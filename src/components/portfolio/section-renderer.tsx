@@ -9,6 +9,7 @@ import { CertificationsSection } from "./sections/certifications-section";
 import { TestimonialsSection } from "./sections/testimonials-section";
 import { ContactSection } from "./sections/contact-section";
 import { CustomSection } from "./sections/custom-section";
+import { BlogPostsSection } from "./sections/blog-posts-section";
 
 interface SectionRendererProps {
   section: Section;
@@ -28,6 +29,7 @@ export function SectionRenderer({ section, settings }: SectionRendererProps) {
     case "certifications":return <CertificationsSection {...props} />;
     case "testimonials":  return <TestimonialsSection {...props} />;
     case "contact":       return <ContactSection {...props} />;
+    case "blog_posts":    return <BlogPostsSection {...props} />;
     case "custom":        return <CustomSection {...props} />;
     default:              return null;
   }

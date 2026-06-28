@@ -16,7 +16,8 @@ export default function GeneralSettingsPage() {
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<SiteSettings>();
   const availableForWork = watch("available_for_work");
-  const isAvatarVisible = watch("is_avatar_visible");
+  const isHeroAvatarVisible = watch("is_hero_avatar_visible");
+  const isAboutAvatarVisible = watch("is_about_avatar_visible");
 
   useEffect(() => {
     const fetch = async () => {
@@ -46,6 +47,10 @@ export default function GeneralSettingsPage() {
         available_for_work: data.available_for_work,
         is_avatar_visible: data.is_avatar_visible,
         avatar_url: data.avatar_url,
+        hero_avatar_url: data.hero_avatar_url,
+        is_hero_avatar_visible: data.is_hero_avatar_visible,
+        about_avatar_url: data.about_avatar_url,
+        is_about_avatar_visible: data.is_about_avatar_visible,
         resume_url: data.resume_url,
         social_links: data.social_links,
         seo_meta: data.seo_meta,
@@ -130,24 +135,50 @@ export default function GeneralSettingsPage() {
 
           {/* Files */}
           <Card>
-            <CardHeader><CardTitle className="text-sm">Files</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <FormField label="Avatar URL" hint="Upload to Supabase Storage and paste the public URL here">
-                <Input {...register("avatar_url")} type="url" placeholder="https://your-project.supabase.co/storage/v1/object/public/portfolio-assets/avatar.jpg" />
-              </FormField>
-              <div className="flex items-center gap-3 py-1">
-                <Switch
-                  checked={isAvatarVisible ?? true}
-                  onCheckedChange={(val) => setValue("is_avatar_visible", val)}
-                />
-                <div>
-                  <p className="text-sm font-medium">Show Avatar</p>
-                  <p className="text-xs text-muted-foreground">Toggle avatar visibility on your portfolio hero & about sections</p>
+            <CardHeader><CardTitle className="text-sm">Files & Media</CardTitle></CardHeader>
+            <CardContent className="space-y-6">
+              
+              {/* Hero Avatar Group */}
+              <div className="space-y-3 p-4 border border-border rounded-lg bg-accent/5">
+                <p className="text-xs font-mono uppercase text-primary tracking-wider">[ 01_HERO_AVATAR ]</p>
+                <FormField label="Hero Avatar URL" hint="URL of the avatar to show in the Hero section">
+                  <Input {...register("hero_avatar_url")} type="url" placeholder="https://your-project.supabase.co/storage/v1/object/public/portfolio-assets/hero-avatar.jpg" />
+                </FormField>
+                <div className="flex items-center gap-3 py-1">
+                  <Switch
+                    checked={isHeroAvatarVisible ?? true}
+                    onCheckedChange={(val) => setValue("is_hero_avatar_visible", val)}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Show Hero Avatar</p>
+                    <p className="text-xs text-muted-foreground">Toggle avatar visibility on your portfolio hero section</p>
+                  </div>
                 </div>
               </div>
+
+              {/* About Avatar Group */}
+              <div className="space-y-3 p-4 border border-border rounded-lg bg-accent/5">
+                <p className="text-xs font-mono uppercase text-primary tracking-wider">[ 02_ABOUT_AVATAR ]</p>
+                <FormField label="About Avatar URL" hint="URL of the avatar to show in the About section">
+                  <Input {...register("about_avatar_url")} type="url" placeholder="https://your-project.supabase.co/storage/v1/object/public/portfolio-assets/about-avatar.jpg" />
+                </FormField>
+                <div className="flex items-center gap-3 py-1">
+                  <Switch
+                    checked={isAboutAvatarVisible ?? true}
+                    onCheckedChange={(val) => setValue("is_about_avatar_visible", val)}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Show About Avatar</p>
+                    <p className="text-xs text-muted-foreground">Toggle avatar visibility on your portfolio about section</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Resume */}
               <FormField label="Resume URL" hint="Upload your PDF resume and paste the public URL">
                 <Input {...register("resume_url")} type="url" placeholder="https://your-project.supabase.co/storage/v1/object/public/portfolio-assets/resume.pdf" />
               </FormField>
+
             </CardContent>
           </Card>
 
@@ -181,7 +212,7 @@ export default function GeneralSettingsPage() {
             <CardHeader><CardTitle className="text-sm">SEO</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <FormField label="Meta Title" hint="Shown in browser tab and search results">
-                <Input {...register("seo_meta.title")} placeholder="Ayush Kumar — Full-Stack Developer" />
+                <Input {...register("seo_meta.title")} placeholder="Ayush Mishra — Full-Stack Developer" />
               </FormField>
               <FormField label="Meta Description" hint="150–160 characters for best SEO">
                 <Textarea {...register("seo_meta.description")} rows={2} placeholder="Full-stack developer specializing in Java, Spring Boot and Angular..." />
