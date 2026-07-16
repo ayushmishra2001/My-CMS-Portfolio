@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Layers, FolderOpen, Zap, Briefcase,
   GraduationCap, Award, MessageSquare, Mail, Settings,
   LogOut, User, ChevronRight, PanelLeftClose, PanelLeft,
-  FileText,
+  FileText, Palette
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -28,7 +28,7 @@ const NAV_ITEMS = [
 
 const SETTINGS_ITEMS = [
   { label: "General",     href: "/admin/settings/general",     icon: Settings },
-
+  { label: "Background",  href: "/admin/settings/background",  icon: Palette },
 ];
 
 interface SidebarProps {

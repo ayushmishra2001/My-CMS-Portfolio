@@ -40,6 +40,7 @@ export interface SiteSettings {
     og_image: string;
     keywords: string;
     designation?: string;
+    warp_config?: Record<string, any>;
   };
   webhook_urls: {
     discord: string;
