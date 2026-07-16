@@ -30,7 +30,7 @@ export default async function PortfolioLayout({ children }: { children: React.Re
     .order("display_order");
 
   return (
-    <div className={`min-h-screen bg-background text-foreground dark font-sans`}>
+    <div className={`min-h-screen bg-background text-foreground dark font-sans overflow-x-hidden relative`}>
       <AnalyticsTracker />
       <PortfolioNav
         name={settings?.display_name || settings?.full_name || "Portfolio"}

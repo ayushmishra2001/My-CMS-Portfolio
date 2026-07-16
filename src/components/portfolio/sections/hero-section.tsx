@@ -28,7 +28,7 @@ export function HeroSection({ section, settings }: Props) {
 
         {/* Hero Name (Massive Manuka) */}
         <h1 
-          className="font-manuka font-black text-[13vw] sm:text-[90px] md:text-[107px] uppercase tracking-hero text-foreground leading-[0.8]"
+          className="font-manuka font-black text-[13vw] sm:text-[90px] md:text-[107px] uppercase tracking-hero text-foreground leading-[0.8] break-words"
         >
           {settings.display_name as string || settings.full_name as string || "Your Name"}
         </h1>

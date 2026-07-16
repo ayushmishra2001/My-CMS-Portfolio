@@ -46,7 +46,8 @@ export function PortfolioNav({ name, sections }: NavProps) {
     <div className="flex justify-center w-full relative z-50">
       <header
         className={cn(
-          "fixed top-4 w-[98%] max-w-[1300px] z-50 transition-transform duration-300 bg-background/80 backdrop-blur-md border border-border/50 rounded-pill shadow-sm",
+          "fixed top-4 w-[98%] max-w-[1300px] z-50 transition-all duration-300 bg-background/80 backdrop-blur-md border border-border/50 shadow-sm overflow-hidden",
+          menuOpen ? "rounded-[24px]" : "rounded-pill",
           hidden ? "-translate-y-[150%]" : "translate-y-0"
         )}
       >
