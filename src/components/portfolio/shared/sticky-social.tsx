@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function StickySocial({ settings }: Props) {
-  const social = (settings?.social_links as Record<string, string>) || {};
+  const social = (settings?.social_links as Record<string, any>) || {};
   
   const links = [
     { key: "resume", icon: FileText, label: "Resume", href: "/resume" },
