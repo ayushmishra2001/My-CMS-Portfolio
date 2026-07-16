@@ -18,6 +18,7 @@ export default function GeneralSettingsPage() {
   const availableForWork = watch("available_for_work");
   const isHeroAvatarVisible = watch("is_hero_avatar_visible");
   const isAboutAvatarVisible = watch("is_about_avatar_visible");
+  const showStickyBar = watch("social_links.show_sticky_bar");
 
   useEffect(() => {
     const fetch = async () => {
@@ -98,6 +99,9 @@ export default function GeneralSettingsPage() {
               </div>
               <FormField label="Tagline" required hint="One-line description shown under your name">
                 <Input {...register("tagline", { required: "Required" })} placeholder="Full-Stack Developer · Java · Spring Boot · Angular" />
+              </FormField>
+              <FormField label="Designation" hint="Your formal role or title (e.g. Senior Software Engineer)">
+                <Input {...register("seo_meta.designation")} placeholder="Senior Software Engineer" />
               </FormField>
               <FormField label="Bio" hint="2–4 sentences about yourself">
                 <Textarea {...register("bio")} rows={4} placeholder="I am a full-stack developer..." />
@@ -203,6 +207,16 @@ export default function GeneralSettingsPage() {
                     />
                   </FormField>
                 ))}
+              </div>
+              <div className="flex items-center gap-3 pt-4 border-t border-border">
+                <Switch
+                  checked={showStickyBar ?? true}
+                  onCheckedChange={(val) => setValue("social_links.show_sticky_bar", val)}
+                />
+                <div>
+                  <p className="text-sm font-medium">Show Sticky Social Bar</p>
+                  <p className="text-xs text-muted-foreground">Display the floating social icons on the left side of the screen</p>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -24,77 +24,64 @@ export function TestimonialsSection({ section, settings: _ }: Props) {
   return (
     <SectionWrapper section={section}>
       <SectionHeading title={section.label} subtitle={section.subtitle} />
-      <div className="border-t border-border bg-background transition-colors duration-300 w-full flex flex-col">
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {items.map((item, index) => (
           <blockquote 
             key={item.id} 
-            className="border-b border-border py-10 md:py-14 px-4 md:px-8 relative overflow-hidden group hover:bg-accent/5 transition-colors duration-300 last:border-b-0"
+            className="flex flex-col justify-between rounded-pill p-6 md:p-8 bg-background border border-border hover:border-verge-link transition-colors duration-300 relative group overflow-hidden"
           >
-            {/* Massive Typographic Background Quote Mark */}
-            <div className="absolute right-6 -top-12 md:-top-20 font-serif text-[18rem] md:text-[28rem] font-bold text-foreground/[0.03] select-none pointer-events-none leading-none select-none">
+            {/* Background Quote Mark */}
+            <div className="absolute -right-4 -top-8 font-manuka text-[160px] font-black text-border/20 select-none pointer-events-none leading-none group-hover:text-verge-link/10 transition-colors">
               ”
             </div>
 
-            {/* Testimonial Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative z-10">
-              {/* Review & Rating Column */}
-              <div className="col-span-1 lg:col-span-8 flex flex-col justify-between space-y-4">
-                {/* Rating specifications */}
-                <div className="flex items-center gap-2 font-mono text-[9px] text-muted-foreground uppercase">
-                  <span>[ RATING_INDEX ]</span>
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`h-3.5 w-3.5 ${
-                          i < item.rating 
-                            ? "text-primary fill-primary" 
-                            : "text-muted-foreground/20 fill-transparent"
-                        }`} 
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Main Quote Content */}
-                <p className="text-base sm:text-lg md:text-xl font-light text-foreground tracking-tight leading-relaxed italic pr-4">
-                  &ldquo;{item.content}&rdquo;
-                </p>
+            {/* Quote Content */}
+            <div className="relative z-10 mb-8">
+              <div className="flex items-center gap-1 mb-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star 
+                    key={i} 
+                    className={`h-4 w-4 ${
+                      i < item.rating 
+                        ? "text-verge-mint fill-verge-mint" 
+                        : "text-muted-foreground/30 fill-transparent"
+                    }`} 
+                  />
+                ))}
               </div>
+              <p className="font-sans text-[16px] md:text-[20px] font-medium text-foreground tracking-tight leading-relaxed">
+                &ldquo;{item.content}&rdquo;
+              </p>
+            </div>
 
-              {/* Author Column */}
-              <div className="col-span-1 lg:col-span-4 flex items-center lg:justify-end gap-4">
-                {/* Sharp square avatar box */}
-                {item.author_avatar_url ? (
-                  <div className="relative w-12 h-12 shrink-0 border border-border p-1 bg-background overflow-hidden group-hover:border-primary/45 transition-colors duration-300">
-                    <Image 
-                      src={item.author_avatar_url} 
-                      alt={item.author_name} 
-                      fill 
-                      className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-105" 
-                      sizes="48px"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-12 h-12 shrink-0 border border-border bg-accent/10 flex items-center justify-center font-mono font-bold text-xs uppercase text-primary">
-                    {getInitials(item.author_name)}
-                  </div>
-                )}
-
-                {/* Author Credentials */}
-                <div className="font-mono text-left lg:text-right">
-                  <span className="text-[8px] text-muted-foreground uppercase tracking-widest block">
-                    [ RECORD_REF // {String(index + 1).padStart(2, "0")} ]
-                  </span>
-                  <h4 className="font-bold text-xs sm:text-sm uppercase text-foreground mt-0.5 leading-tight">
-                    {item.author_name}
-                  </h4>
-                  {(item.author_role || item.author_company) && (
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1 leading-normal">
-                      {[item.author_role, item.author_company].filter(Boolean).join(" // ")}
-                    </p>
-                  )}
+            {/* Author */}
+            <div className="flex items-center gap-4 border-t border-border/40 pt-4 mt-auto">
+              {item.author_avatar_url ? (
+                <div className="relative w-12 h-12 shrink-0 rounded-full overflow-hidden border border-border">
+                  <Image 
+                    src={item.author_avatar_url} 
+                    alt={item.author_name} 
+                    fill 
+                    className="object-cover" 
+                    sizes="48px"
+                  />
                 </div>
+              ) : (
+                <div className="w-12 h-12 shrink-0 rounded-full border border-border bg-white/5 flex items-center justify-center font-mono font-bold text-xs uppercase text-verge-mint">
+                  {getInitials(item.author_name)}
+                </div>
+              )}
+
+              <div>
+                <h4 className="font-sans text-[16px] font-bold uppercase text-foreground leading-tight">
+                  {item.author_name}
+                </h4>
+                {(item.author_role || item.author_company) && (
+                  <p className="font-mono text-[11px] uppercase tracking-mono-wide text-muted-foreground mt-1">
+                    {[item.author_role, item.author_company].filter(Boolean).join(" // ")}
+                  </p>
+                )}
               </div>
             </div>
           </blockquote>

@@ -24,25 +24,6 @@ export function SectionWrapper({ section, children, className }: SectionWrapperP
     return () => obs.disconnect();
   }, [config.animation]);
 
-  const maxWidthClass = {
-    sm: "max-w-2xl",
-    md: "max-w-4xl",
-    lg: "max-w-6xl",
-    full: "max-w-full",
-  }[config.max_width ?? "lg"] ?? "max-w-6xl";
-
-  const paddingClass = {
-    sm: "py-12",
-    md: "py-20",
-    lg: "py-28",
-  }[config.padding ?? "md"] ?? "py-20";
-
-  const fontClass = {
-    sm: "text-sm",
-    md: "text-base",
-    lg: "text-lg",
-  }[config.font_size ?? "md"] ?? "text-base";
-
   const animationClass = {
     none: "",
     fade: visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
@@ -50,20 +31,13 @@ export function SectionWrapper({ section, children, className }: SectionWrapperP
     zoom: visible ? "opacity-100 scale-100" : "opacity-0 scale-95",
   }[config.animation ?? "fade"] ?? (visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6");
 
-  const style: React.CSSProperties = {
-    backgroundColor: config.background_color || undefined,
-    color: config.text_color || undefined,
-    "--accent": config.accent_color || undefined,
-  } as React.CSSProperties;
-
   return (
     <section
       id={section.type}
       ref={ref}
-      style={style}
-      className={cn(paddingClass, fontClass, "transition-all duration-700", animationClass, className)}
+      className={cn("w-full transition-all duration-700 col-span-1 lg:col-span-12 pt-8 pb-16 md:py-16", animationClass, className)}
     >
-      <div className={cn("mx-auto px-6", maxWidthClass)}>
+      <div className="w-full">
         {children}
       </div>
     </section>
@@ -72,9 +46,9 @@ export function SectionWrapper({ section, children, className }: SectionWrapperP
 
 export function SectionHeading({ title, subtitle }: { title: string; subtitle?: string | null }) {
   return (
-    <div className="mb-12">
-      <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
-      {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
+    <div className="mb-12 border-b border-border/20 pb-4">
+      <h2 className="font-manuka text-6xl md:text-[90px] font-black uppercase tracking-hero text-foreground leading-[0.8]">{title}</h2>
+      {subtitle && <p className="font-sans text-[19px] font-light uppercase tracking-whisper text-foreground mt-6">{subtitle}</p>}
     </div>
   );
 }

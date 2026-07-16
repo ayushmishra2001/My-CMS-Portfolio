@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { Section, Education } from "@/lib/types";
 import { SectionWrapper, SectionHeading } from "../shared/section-wrapper";
 import { createClient } from "@/lib/supabase/client";
-import { formatDateRange } from "@/lib/utils";
-import { ExternalLink, MapPin } from "lucide-react";
 
 interface Props { section: Section; settings: Record<string, unknown>; }
 
@@ -29,81 +27,72 @@ export function EducationSection({ section, settings: _ }: Props) {
   return (
     <SectionWrapper section={section}>
       <SectionHeading title={section.label} subtitle={section.subtitle} />
-      <div className="border-t border-border bg-background transition-colors duration-300 w-full flex flex-col">
-        {items.map((item) => {
-          const startYear = getYearString(item.start_date);
-          const endYear = item.is_current ? "PRES" : getYearString(item.end_date);
+      
+      <div className="relative w-full pl-6 md:pl-16">
+        {/* The Vertical Rail */}
+        <div className="absolute left-0 md:left-8 top-0 bottom-0 w-[1px] bg-border/40 dashed-rail" />
 
-          return (
-            <div 
-              key={item.id} 
-              className="border-b border-border py-8 md:py-12 px-4 md:px-8 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 hover:bg-accent/5 transition-colors duration-300"
-            >
-              {/* Year/Date Structural Anchor Column */}
-              <div className="col-span-1 md:col-span-4 flex flex-col justify-start space-y-2">
-                <div className="font-mono text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tighter leading-none uppercase select-none">
-                  {startYear} <span className="text-muted-foreground/30">//</span> {endYear}
+        <div className="flex flex-col gap-6">
+          {items.map((item, index) => {
+            const startYear = getYearString(item.start_date);
+            const endYear = item.is_current ? "PRES" : getYearString(item.end_date);
+            const isHighlight = index === 0;
+
+            return (
+              <div key={item.id} className="relative group">
+                
+                {/* Left Rail Timestamp */}
+                <div className="absolute -left-6 md:-left-16 top-[28px] w-6 md:w-16 pr-2 md:pr-4 text-right">
+                  <span className="block font-mono text-[10px] md:text-[11px] font-medium uppercase tracking-mono-tight text-muted-foreground bg-background py-1">
+                    {startYear}
+                  </span>
                 </div>
-                <div className="space-y-1 font-mono">
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                    {formatDateRange(item.start_date, item.end_date, item.is_current)}
-                  </div>
-                  {item.grade && (
-                    <div className="text-[9px] text-primary uppercase font-bold tracking-widest">
-                      [ GRADE // {item.grade} ]
-                    </div>
-                  )}
-                  <div className="text-[9px] text-muted-foreground/60 uppercase tracking-widest">
-                    [ RECORD // EDUCATION ]
-                  </div>
-                </div>
-              </div>
 
-              {/* Degree, Institution & Description Column */}
-              <div className="col-span-1 md:col-span-8 flex flex-col justify-between">
-                <div>
-                  {/* Imposing Degree Title */}
-                  <div>
-                    <h3 className="text-lg md:text-2xl font-black uppercase tracking-tight text-foreground leading-tight">
-                      {item.degree} <span className="text-muted-foreground/40 font-light">IN</span> {item.field}
-                    </h3>
-                    
-                    <div className="flex flex-wrap items-center gap-3 mt-2 font-mono text-[11px] uppercase text-muted-foreground">
-                      {item.institution_url ? (
-                        <a 
-                          href={item.institution_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-primary hover:text-primary/80 hover:underline inline-flex items-center gap-1 font-semibold"
-                        >
-                          {item.institution} <ExternalLink className="h-3 w-3" />
-                        </a>
-                      ) : (
-                        <span className="font-semibold text-foreground/80">{item.institution}</span>
-                      )}
-                      {item.location && (
-                        <>
-                          <span className="text-muted-foreground/30">•</span>
-                          <span className="flex items-center gap-1 text-xs">
-                            <MapPin className="h-3 w-3 text-muted-foreground/60" />
-                            {item.location}
-                          </span>
-                        </>
-                      )}
-                    </div>
+                {/* Pill Card */}
+                <div className={`
+                  w-full rounded-pill p-6 md:p-8 transition-colors duration-200
+                  ${isHighlight 
+                    ? "bg-verge-uv/20 border border-verge-uv/50 text-foreground" 
+                    : "bg-background border border-border hover:border-verge-link"}
+                `}>
+                  {/* Kicker */}
+                  <div className="font-mono text-[11px] md:text-[12px] uppercase tracking-mono-wide text-verge-mint mb-2">
+                    {item.institution}
                   </div>
 
-                  {/* Description */}
+                  {/* Headline */}
+                  <h3 className="font-sans text-[20px] md:text-[24px] font-bold leading-tight group-hover:text-verge-link transition-colors">
+                    {item.degree} {item.field && `IN ${item.field}`}
+                  </h3>
+
+                  {/* Deck / Body */}
                   {item.description && (
-                    <p className="text-sm text-foreground/80 leading-relaxed font-light mt-4 max-w-2xl">
+                    <p className="font-sans text-[13px] md:text-[16px] font-medium leading-relaxed mt-4 text-foreground/80 max-w-3xl">
                       {item.description}
                     </p>
                   )}
+
+                  {/* Micro Metadata */}
+                  <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2">
+                    <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-muted-foreground">
+                      DURATION: {startYear} - {endYear}
+                    </div>
+                    {item.location && (
+                      <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-muted-foreground">
+                        LOC: {item.location}
+                      </div>
+                    )}
+                    {item.grade && (
+                      <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-verge-mint">
+                        GRADE: {item.grade}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </SectionWrapper>
   );

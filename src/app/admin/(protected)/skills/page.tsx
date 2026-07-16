@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { createClient } from "@/lib/supabase/client";
 import { AdminHeader } from "@/components/admin/layout/header";
 import { Button } from "@/components/shared/button";
-import { Input, FormField, Card, CardContent, CardHeader, CardTitle, Badge, Switch } from "@/components/shared/form-elements";
+import { Input, FormField, Card, CardContent, CardHeader, CardTitle, Badge, Switch, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/shared/form-elements";
 import { DataTable, Column } from "@/components/admin/ui/data-table";
 import { ConfirmDelete } from "@/components/admin/ui/confirm-delete";
 import { Pencil, Trash2, X } from "lucide-react";
@@ -28,8 +28,11 @@ export default function SkillsPage() {
   const [deleting, setDeleting] = useState(false);
   const supabase = createClient();
 
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<SkillFormData>({ defaultValues: defaultForm });
   const proficiency = watch("proficiency");
+  const categoryValue = watch("category");
 
   const fetchSkills = async () => {
     setLoading(true);
@@ -43,6 +46,7 @@ export default function SkillsPage() {
   const openEdit = (skill: Skill) => {
     setEditingId(skill.id);
     reset({ ...skill });
+    setIsCustomCategory(false);
   };
 
   const onSubmit = async (data: SkillFormData) => {
@@ -185,16 +189,50 @@ export default function SkillsPage() {
                   <Input {...register("name", { required: "Name is required" })} placeholder="React" />
                 </FormField>
                 <FormField label="Category" required error={errors.category?.message}>
-                  <Input 
-                    list="skills-categories" 
-                    {...register("category", { required: "Category is required" })} 
-                    placeholder="Frontend" 
-                  />
-                  <datalist id="skills-categories">
-                    {uniqueCategories.map((cat) => (
-                      <option key={cat} value={cat} />
-                    ))}
-                  </datalist>
+                  <input type="hidden" {...register("category", { required: "Category is required" })} />
+                  {!isCustomCategory ? (
+                    <Select 
+                      value={categoryValue || ""} 
+                      onValueChange={(val) => {
+                        if (val === "___NEW___") {
+                          setIsCustomCategory(true);
+                          setValue("category", "");
+                        } else {
+                          setValue("category", val);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full bg-transparent border-input">
+                        <SelectValue placeholder="Select category..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {uniqueCategories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                        <SelectItem value="___NEW___" className="font-bold text-primary">+ Create New Category</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input 
+                        value={categoryValue || ""}
+                        onChange={(e) => setValue("category", e.target.value)}
+                        placeholder="E.g. Cloud Architecture" 
+                        autoFocus
+                      />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setIsCustomCategory(false);
+                          setValue("category", uniqueCategories[0] || "General");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
                 </FormField>
                 <FormField label="Proficiency (1–5)">
                   <div className="space-y-1 pt-1.5">

@@ -32,12 +32,14 @@ export interface SiteSettings {
     youtube: string;
     devto: string;
     hashnode: string;
+    show_sticky_bar?: boolean;
   };
   seo_meta: {
     title: string;
     description: string;
     og_image: string;
     keywords: string;
+    designation?: string;
   };
   webhook_urls: {
     discord: string;

@@ -28,7 +28,7 @@ const NAV_ITEMS = [
 
 const SETTINGS_ITEMS = [
   { label: "General",     href: "/admin/settings/general",     icon: Settings },
-  { label: "Customizer",  href: "/admin/settings/customizer",  icon: User },
+
 ];
 
 interface SidebarProps {
@@ -127,7 +127,7 @@ export function AdminSidebar({ userEmail }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-0.5">
-          {!collapsed && <p className="text-xs font-medium text-sidebar-foreground/40 px-2 mb-2 uppercase tracking-wider">Content</p>}
+          {!collapsed}
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);

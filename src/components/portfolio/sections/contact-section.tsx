@@ -5,7 +5,7 @@ import { Section } from "@/lib/types";
 import { SectionWrapper, SectionHeading } from "../shared/section-wrapper";
 import { Input, Textarea } from "@/components/shared/form-elements";
 import { Button } from "@/components/shared/button";
-import { Mail, Github, Linkedin, Twitter, Globe } from "lucide-react";
+import { Mail, Github, Linkedin, Twitter, Globe, ArrowUpRight } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Props { section: Section; settings: Record<string, unknown>; }
@@ -61,176 +61,154 @@ export function ContactSection({ section, settings }: Props) {
   return (
     <SectionWrapper section={section}>
       <SectionHeading title={section.label} subtitle={section.subtitle} />
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-0 border border-border bg-background transition-colors duration-300 w-full">
+      
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
         
         {/* Left Column: Comms & Signals */}
-        <div className="col-span-1 md:col-span-5 border-b md:border-b-0 md:border-r border-border p-6 md:p-10 flex flex-col justify-between space-y-8">
-          <div>
-            <span className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest block mb-2 select-none">
-              [ COMMS_CHANNELS // INBOX ]
-            </span>
-            <h3 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground leading-tight mb-4 select-none">
-              GET IN TOUCH.
+        <div className="col-span-1 lg:col-span-5 flex flex-col gap-6">
+          <div className="bg-background rounded-pill border border-border p-8 hover:border-verge-link transition-colors">
+            <h3 className="font-manuka text-4xl md:text-[50px] font-black uppercase text-foreground leading-[0.8] tracking-hero mb-4">
+              GET IN TOUCH
             </h3>
-            <p className="text-sm text-foreground/80 leading-relaxed font-light">
-              Have a project in mind, a question, or just want to say hi? My inbox is always open. Let&apos;s build something stark.
+            <p className="font-sans text-[16px] font-medium leading-relaxed text-foreground/80">
+              Have a project in mind, a question, or just want to say hi? My inbox is always open. Let&apos;s build something.
             </p>
           </div>
 
-          <div className="space-y-6">
-            {showEmail && (
-              <div className="pt-6 border-t border-border/40">
-                <span className="font-mono text-[8px] text-muted-foreground uppercase tracking-widest block mb-2 select-none">
-                  [ DIRECT_EMAIL ]
+          {showEmail && (
+            <a 
+              href={`mailto:${settings.email}`}
+              className="group bg-background rounded-pill border border-border p-6 md:p-8 hover:bg-verge-mint hover:border-verge-mint transition-colors flex flex-col gap-4"
+            >
+              <div className="flex justify-between items-center">
+                <span className="font-mono text-[11px] uppercase tracking-mono-wide text-muted-foreground group-hover:text-black/60">
+                  DIRECT EMAIL
                 </span>
-                <a 
-                  href={`mailto:${settings.email}`}
-                  className="group flex items-center justify-between p-4 border border-border bg-background hover:bg-accent transition-colors duration-200"
-                >
-                  <span className="font-mono text-xs sm:text-sm text-foreground select-all font-semibold">
-                    {settings.email as string}
-                  </span>
-                  <Mail className="h-4 w-4 text-muted-foreground group-hover:text-foreground transform group-hover:translate-x-0.5 transition-transform" />
-                </a>
+                <Mail className="h-5 w-5 text-foreground group-hover:text-black" />
               </div>
-            )}
+              <span className="font-sans text-[20px] md:text-[24px] font-bold text-foreground group-hover:text-black transition-colors break-all">
+                {settings.email as string}
+              </span>
+            </a>
+          )}
 
-            {showSocial && (
-              <div className="pt-6 border-t border-border/40">
-                <span className="font-mono text-[8px] text-muted-foreground uppercase tracking-widest block mb-3 select-none">
-                  [ EXTERNAL_SIGNALS ]
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-[1px] bg-border border border-border overflow-hidden">
-                  {SOCIAL_LINKS.map(({ key, icon: Icon, label }) => (
-                    <a 
-                      key={key} 
-                      href={social[key]} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      aria-label={label}
-                      className="flex flex-col items-center justify-center p-4 bg-background hover:bg-accent text-muted-foreground hover:text-foreground transition-colors duration-200 gap-1.5 text-center"
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="font-mono text-[8px] uppercase tracking-wider">{label}</span>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          {showSocial && (
+            <div className="grid grid-cols-2 gap-4">
+              {SOCIAL_LINKS.map(({ key, icon: Icon, label }) => (
+                <a 
+                  key={key} 
+                  href={social[key]} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  aria-label={label}
+                  className="group flex flex-col justify-between p-6 bg-background rounded-pill border border-border hover:border-verge-link transition-colors aspect-square md:aspect-auto md:h-32"
+                >
+                  <div className="flex justify-between items-center">
+                    <Icon className="h-5 w-5 text-foreground group-hover:text-verge-link transition-colors" />
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-verge-link transition-colors" />
+                  </div>
+                  <span className="font-sans text-[16px] font-bold text-foreground uppercase mt-auto">
+                    {label}
+                  </span>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right Column: Form Panel */}
-        <div className="col-span-1 md:col-span-7 p-6 md:p-10 flex flex-col justify-center bg-card/10">
+        <div className="col-span-1 lg:col-span-7 flex flex-col">
           {showForm && (
-            <div>
+            <div className="bg-background rounded-pill border border-border p-8 md:p-12 h-full flex flex-col">
               {sent ? (
-                /* Monospace Console Success Block */
-                <div className="border border-green-500/30 bg-green-500/[0.02] p-6 md:p-8 font-mono text-left">
-                  <div className="flex items-center justify-between border-b border-green-500/20 pb-3 mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      <span className="text-[10px] uppercase font-bold text-green-500/90 tracking-widest">
-                        SYSTEM_COMMS // ESTABLISHED
-                      </span>
-                    </div>
-                    <span className="text-[9px] text-green-500/60 uppercase">
-                      [ STACK_OK ]
-                    </span>
+                <div className="bg-verge-mint/10 border border-verge-mint rounded-pill p-8 md:p-12 text-center my-auto">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-verge-mint text-black mb-6">
+                    <Mail className="h-8 w-8" />
                   </div>
-
-                  <div className="space-y-3 text-xs text-green-500/90 leading-relaxed">
-                    <p className="font-bold">&gt;&gt;&gt; MESSAGE_TRANSMISSION: SUCCESSFUL</p>
-                    <p className="text-green-500/70">
-                      Your transmission packet has been serialized, signed, and saved into the portfolio datastore.
-                    </p>
-                    <p className="text-green-500/70">
-                      Our gateway will review the payload. Expect a callback route soon.
-                    </p>
-                  </div>
-
-                  <div className="mt-8 pt-4 border-t border-green-500/20">
-                    <button 
-                      onClick={() => setSent(false)} 
-                      className="inline-flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold text-green-400 hover:text-green-300 hover:underline transition-colors"
-                    >
-                      <span>&lt;&lt; RESET_TERMINAL // NEW_PACKET</span>
-                    </button>
-                  </div>
+                  <h3 className="font-sans text-[24px] md:text-[32px] font-bold text-foreground mb-4">
+                    MESSAGE SENT
+                  </h3>
+                  <p className="font-sans text-[16px] text-foreground/80 mb-8 max-w-md mx-auto">
+                    Thanks for reaching out! I&apos;ll get back to you as soon as I can.
+                  </p>
+                  <button 
+                    onClick={() => setSent(false)} 
+                    className="font-mono text-[12px] font-semibold uppercase tracking-mono-norm text-foreground hover:text-verge-link transition-colors"
+                  >
+                    SEND ANOTHER MESSAGE ↗
+                  </button>
                 </div>
               ) : (
-                /* Industrial Print / Terminal Form */
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="space-y-1.5">
-                      <label className="font-mono text-[10px] uppercase font-bold text-foreground tracking-wider block">
-                        NAME_SPEC <span className="text-primary">*</span>
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full space-y-6">
+                  <h3 className="font-mono text-[12px] uppercase tracking-mono-wide text-verge-mint mb-2">
+                    SEND A MESSAGE
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="font-sans text-[14px] font-bold text-foreground uppercase">
+                        NAME <span className="text-verge-uv">*</span>
                       </label>
                       <Input 
                         {...register("name", { required: "Required" })} 
-                        placeholder="ENTER YOUR NAME" 
-                        className="rounded-none border-border bg-background h-12 px-4 text-sm font-mono tracking-tight focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all duration-200"
+                        placeholder="Your Name" 
+                        className="rounded-[10px] border-border/50 bg-accent/5 h-14 px-4 font-sans text-[16px] focus-visible:ring-1 focus-visible:ring-verge-uv focus-visible:border-verge-uv transition-all"
                       />
                       {errors.name && (
-                        <p className="font-mono text-[9px] text-destructive uppercase tracking-widest mt-1">
-                          [ ERROR // {errors.name.message} ]
-                        </p>
+                        <p className="font-mono text-[10px] text-verge-uv uppercase mt-1">Required</p>
                       )}
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="font-mono text-[10px] uppercase font-bold text-foreground tracking-wider block">
-                        EMAIL_SPEC <span className="text-primary">*</span>
+                    <div className="space-y-2">
+                      <label className="font-sans text-[14px] font-bold text-foreground uppercase">
+                        EMAIL <span className="text-verge-uv">*</span>
                       </label>
                       <Input 
                         {...register("email", { required: "Required" })} 
                         type="email" 
-                        placeholder="YOU@EXAMPLE.COM" 
-                        className="rounded-none border-border bg-background h-12 px-4 text-sm font-mono tracking-tight focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all duration-200"
+                        placeholder="you@example.com" 
+                        className="rounded-[10px] border-border/50 bg-accent/5 h-14 px-4 font-sans text-[16px] focus-visible:ring-1 focus-visible:ring-verge-uv focus-visible:border-verge-uv transition-all"
                       />
                       {errors.email && (
-                        <p className="font-mono text-[9px] text-destructive uppercase tracking-widest mt-1">
-                          [ ERROR // {errors.email.message} ]
-                        </p>
+                        <p className="font-mono text-[10px] text-verge-uv uppercase mt-1">Required</p>
                       )}
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="font-mono text-[10px] uppercase font-bold text-foreground tracking-wider block">
-                      SUBJECT_LINE
+                  <div className="space-y-2">
+                    <label className="font-sans text-[14px] font-bold text-foreground uppercase">
+                      SUBJECT
                     </label>
                     <Input 
                       {...register("subject")} 
-                      placeholder="PROJECT INQUIRY / COLLABORATION" 
-                      className="rounded-none border-border bg-background h-12 px-4 text-sm font-mono tracking-tight focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all duration-200"
+                      placeholder="What's this about?" 
+                      className="rounded-[10px] border-border/50 bg-accent/5 h-14 px-4 font-sans text-[16px] focus-visible:ring-1 focus-visible:ring-verge-uv focus-visible:border-verge-uv transition-all"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="font-mono text-[10px] uppercase font-bold text-foreground tracking-wider block">
-                      MESSAGE_BODY <span className="text-primary">*</span>
+                  <div className="space-y-2 flex-grow flex flex-col">
+                    <label className="font-sans text-[14px] font-bold text-foreground uppercase">
+                      MESSAGE <span className="text-verge-uv">*</span>
                     </label>
                     <Textarea 
                       {...register("message", { required: "Required" })} 
-                      rows={5} 
-                      placeholder="TELL ME ABOUT YOUR PROJECT DETAILS..." 
-                      className="rounded-none border-border bg-background p-4 text-sm font-mono tracking-tight focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all duration-200 min-h-[140px]"
+                      placeholder="Write your message here..." 
+                      className="rounded-[10px] border-border/50 bg-accent/5 p-4 font-sans text-[16px] focus-visible:ring-1 focus-visible:ring-verge-uv focus-visible:border-verge-uv transition-all flex-grow min-h-[160px] resize-none"
                     />
                     {errors.message && (
-                      <p className="font-mono text-[9px] text-destructive uppercase tracking-widest mt-1">
-                        [ ERROR // {errors.message.message} ]
-                      </p>
+                      <p className="font-mono text-[10px] text-verge-uv uppercase mt-1">Required</p>
                     )}
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    loading={sending} 
-                    className="w-full h-14 rounded-none bg-primary text-primary-foreground font-mono text-xs uppercase font-black tracking-widest hover:bg-primary/90 transition-colors duration-200 border-none flex items-center justify-center gap-2"
-                  >
-                    <span>TRANSMIT_MESSAGE // SEND</span>
-                  </Button>
+                  <div className="pt-4">
+                    <Button 
+                      type="submit" 
+                      loading={sending} 
+                      className="w-full h-[52px] rounded-btn bg-verge-mint hover:bg-white/20 text-black font-mono text-[14px] uppercase font-bold tracking-mono-norm transition-all hover:shadow-[0_0_0_1px_#c2c2c2] border-none"
+                    >
+                      SEND MESSAGE
+                    </Button>
+                  </div>
                 </form>
               )}
             </div>

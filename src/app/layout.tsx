@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "@/styles/globals.css";
 import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "DevFolio CMS",
@@ -13,8 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}>
-        {children}
-        <Toaster
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster
           position="bottom-right"
           toastOptions={{
             duration: 3000,
@@ -26,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             },
           }}
         />
+        </ThemeProvider>
       </body>
     </html>
   );
