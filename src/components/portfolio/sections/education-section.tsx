@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Section, Education } from "@/lib/types";
 import { SectionWrapper, SectionHeading } from "../shared/section-wrapper";
 import { createClient } from "@/lib/supabase/client";
+import { GraduationCap } from "lucide-react";
 
 interface Props { section: Section; settings: Record<string, unknown>; }
 
@@ -52,51 +53,84 @@ export function EducationSection({ section, settings: _ }: Props) {
                   </span>
                 </div>
 
-                {/* Pill Card */}
+                {/* Outer Card */}
                 <div className={`
-                  w-full rounded-pill p-6 md:p-8 transition-colors duration-200
+                  w-full rounded-2xl p-4 transition-all duration-200 flex flex-col lg:flex-row gap-4
                   ${isHighlight 
-                    ? "bg-verge-uv/20 border border-verge-uv/50 text-foreground" 
-                    : "bg-background border border-border hover:border-verge-link"}
+                    ? "bg-background/40 backdrop-blur-md border border-primary text-foreground shadow-[0_0_15px_rgba(230,25,25,0.15)]" 
+                    : "bg-background border border-border hover:border-primary/50"}
                 `}>
-                  {/* Kicker */}
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-mono text-[11px] md:text-[12px] uppercase tracking-mono-wide text-verge-mint">
-                      {item.institution}
-                    </span>
-                    <span className="md:hidden font-mono text-[10px] uppercase tracking-mono-wide text-muted-foreground bg-background/50 px-1.5 py-0.5 border border-border rounded-[2px]">
-                      {startYear}
-                    </span>
-                  </div>
-
-                  {/* Headline */}
-                  <h3 className="font-sans text-[20px] md:text-[24px] font-bold leading-tight group-hover:text-verge-link transition-colors">
-                    {item.degree} {item.field && `IN ${item.field}`}
-                  </h3>
-
-                  {/* Deck / Body */}
-                  {item.description && (
-                    <p className="font-sans text-[13px] md:text-[16px] font-medium leading-relaxed mt-4 text-foreground/80 max-w-3xl">
-                      {item.description}
-                    </p>
-                  )}
-
-                  {/* Micro Metadata */}
-                  <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2">
-                    <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-muted-foreground">
-                      DURATION: {startYear} - {endYear}
+                  {/* Left Column (Degree Credential) */}
+                  <div className="w-full lg:w-[60%] border border-border/30 bg-background/20 p-6 md:p-8 rounded-xl flex flex-col justify-between min-h-[280px]">
+                    <div>
+                      {/* Kicker */}
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-verge-mint mb-6">
+                        <GraduationCap className="h-4 w-4" strokeWidth={2} />
+                        <span>EDUCATION CREDENTIAL</span>
+                      </div>
+                      
+                      {/* Degree (Huge brutalist text) */}
+                      <h3 className="font-manuka text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-[0.85] tracking-tight text-foreground group-hover:text-primary transition-colors mb-6 break-words">
+                        {item.degree} {item.field && `IN ${item.field}`}
+                      </h3>
                     </div>
-                    {item.location && (
-                      <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-muted-foreground">
-                        LOC: {item.location}
-                      </div>
-                    )}
-                    {item.grade && (
-                      <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-verge-mint">
-                        GRADE: {item.grade}
-                      </div>
-                    )}
+
+                    {/* Tags at bottom */}
+                    <div className="flex flex-wrap gap-2 pt-4 border-t border-border/10">
+                      {item.field && (
+                        <span className="font-mono text-[10px] uppercase tracking-mono-wide border border-border/60 bg-accent/5 px-3 py-1 rounded-full text-muted-foreground">
+                          {item.field}
+                        </span>
+                      )}
+                      {item.location && (
+                        <span className="font-mono text-[10px] uppercase tracking-mono-wide border border-border/60 bg-accent/5 px-3 py-1 rounded-full text-muted-foreground">
+                          {item.location}
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Right Column (Institution and Metrics) */}
+                  <div className="w-full lg:w-[40%] flex flex-col gap-4">
+                    {/* Institution Box */}
+                    <div className="border border-border/30 bg-background/20 p-6 rounded-xl flex-grow flex flex-col justify-center min-h-[160px]">
+                      <div className="font-mono text-[9px] uppercase tracking-mono-wide text-muted-foreground/60 mb-2">
+                        INSTITUTION
+                      </div>
+                      <h4 className="font-sans text-[16px] md:text-[18px] font-bold uppercase leading-tight text-foreground mb-2">
+                        {item.institution}
+                      </h4>
+                      {item.description && (
+                        <p className="font-sans text-[12px] leading-relaxed text-muted-foreground/80">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Bottom Metadata Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* GPA Box */}
+                      <div className="border border-border/30 bg-background/20 p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                        <div className="font-mono text-[9px] uppercase tracking-mono-wide text-muted-foreground/60 mb-2">
+                          GPA / GRADE
+                        </div>
+                        <div className="font-manuka text-xl sm:text-2xl font-black uppercase text-verge-mint leading-none tracking-tight">
+                          {item.grade || "N/A"}
+                        </div>
+                      </div>
+
+                      {/* Conferred Box */}
+                      <div className="border border-border/30 bg-background/20 p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                        <div className="font-mono text-[9px] uppercase tracking-mono-wide text-muted-foreground/60 mb-2">
+                          CONFERRED
+                        </div>
+                        <div className="font-manuka text-xl sm:text-2xl font-black uppercase text-foreground leading-none tracking-tight">
+                          {startYear} - {endYear}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             );

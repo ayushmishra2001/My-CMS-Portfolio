@@ -4,6 +4,7 @@ import { Section, Experience } from "@/lib/types";
 import { SectionWrapper, SectionHeading } from "../shared/section-wrapper";
 import { createClient } from "@/lib/supabase/client";
 import { formatDateRange } from "@/lib/utils";
+import { Terminal, Code } from "lucide-react";
 
 interface Props { section: Section; settings: Record<string, unknown>; }
 
@@ -25,6 +26,25 @@ export function ExperienceSection({ section, settings: _ }: Props) {
     return isNaN(date.getTime()) ? "XXXX" : date.getFullYear().toString();
   };
 
+  const splitDescription = (desc: string | null) => {
+    if (!desc) return { headline: "", paragraph: "" };
+    const chars = [".", "!", "?"];
+    let firstIndex = -1;
+    for (const char of chars) {
+      const idx = desc.indexOf(char);
+      if (idx !== -1 && (firstIndex === -1 || idx < firstIndex)) {
+        firstIndex = idx;
+      }
+    }
+    if (firstIndex !== -1) {
+      return {
+        headline: desc.slice(0, firstIndex + 1).trim(),
+        paragraph: desc.slice(firstIndex + 1).trim(),
+      };
+    }
+    return { headline: desc, paragraph: "" };
+  };
+
   return (
     <SectionWrapper section={section}>
       <SectionHeading title={section.label} subtitle={section.subtitle} />
@@ -40,6 +60,8 @@ export function ExperienceSection({ section, settings: _ }: Props) {
             const endYear = item.is_current ? "PRES" : getYearString(item.end_date);
             const yearRange = startYear === endYear ? startYear : `${startYear} // ${endYear}`;
             const isHighlight = index === 0;
+            const { headline, paragraph } = splitDescription(item.description);
+            const durationStr = formatDateRange(item.start_date, item.end_date, item.is_current).toUpperCase();
 
             return (
               <div key={item.id} className="relative group">
@@ -56,55 +78,97 @@ export function ExperienceSection({ section, settings: _ }: Props) {
 
                 {/* Pill Card */}
                 <div className={`
-                  w-full rounded-pill p-6 md:p-8 transition-colors duration-200
+                  w-full rounded-2xl transition-all duration-200 flex flex-col lg:flex-row overflow-hidden
                   ${isHighlight 
-                    ? "bg-verge-uv/20 border border-verge-uv/50 text-foreground" 
-                    : "bg-background border border-border hover:border-verge-link"}
+                    ? "bg-background/40 backdrop-blur-md border border-primary text-foreground shadow-[0_0_15px_rgba(230,25,25,0.15)]" 
+                    : "bg-background border border-border hover:border-primary/50"}
                 `}>
-                  {/* Kicker */}
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-mono text-[11px] md:text-[12px] uppercase tracking-mono-wide text-verge-mint">
-                      {item.company}
-                    </span>
-                    <span className="md:hidden font-mono text-[10px] uppercase tracking-mono-wide text-muted-foreground bg-background/50 px-1.5 py-0.5 border border-border rounded-[2px]">
-                      {startYear}
-                    </span>
+                  {/* Left Column */}
+                  <div className="w-full lg:w-[35%] flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-border/30 p-6 md:p-8">
+                    <div>
+                      {/* Kicker */}
+                      <div className="flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-mono-wide text-verge-mint mb-4 font-bold">
+                        <Terminal className="h-4 w-4" strokeWidth={2.5} />
+                        <span>{item.company} {item.is_current && `// CURRENT`}</span>
+                      </div>
+                      
+                      {/* Role (Huge text, uppercase) */}
+                      <h3 className="font-manuka text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-[0.85] tracking-tight text-foreground group-hover:text-primary transition-colors break-words">
+                        {item.role}
+                      </h3>
+                    </div>
+                    
+                    {/* Divider and Metadata */}
+                    <div className="pt-6 mt-6 border-t border-border/30 grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="font-mono text-[9px] uppercase tracking-mono-wide text-muted-foreground/60 mb-1">
+                          DURATION
+                        </div>
+                        <div className="font-mono text-[10px] md:text-[11px] font-bold uppercase tracking-mono-tight text-foreground whitespace-nowrap">
+                          {durationStr}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-[9px] uppercase tracking-mono-wide text-muted-foreground/60 mb-1">
+                          LOCATION
+                        </div>
+                        <div className="font-mono text-[10px] md:text-[11px] font-bold uppercase tracking-mono-tight text-foreground">
+                          {item.location || "N/A"}
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Headline */}
-                  <h3 className="font-sans text-[20px] md:text-[24px] font-bold leading-tight group-hover:text-verge-link transition-colors">
-                    {item.role}
-                  </h3>
+                  {/* Right Column */}
+                  <div className="w-full lg:w-[65%] p-6 md:p-8 flex flex-col justify-between">
+                    <div>
+                      {/* Top Horizontal Bar and Icon */}
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="w-12 h-1 bg-verge-mint mt-2" />
+                        <div className="border border-border/40 p-1.5 text-muted-foreground/50 rounded-[4px] bg-background/20">
+                          <Code className="h-4 w-4" />
+                        </div>
+                      </div>
 
-                  {/* Deck / Body */}
-                  {item.description && (
-                    <p className="font-sans text-[13px] md:text-[16px] font-medium leading-relaxed mt-4 text-foreground/80 max-w-3xl">
-                      {item.description}
-                    </p>
-                  )}
+                      {/* Headline / Description Kicker */}
+                      {headline && (
+                        <h4 className="font-sans text-[16px] md:text-[18px] font-bold leading-tight text-foreground mb-4">
+                          {headline}
+                        </h4>
+                      )}
 
-                  {/* Micro Metadata */}
-                  <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2">
-                    <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-muted-foreground">
-                      DURATION: {formatDateRange(item.start_date, item.end_date, item.is_current)}
+                      {/* Paragraph / Remaining Description */}
+                      {paragraph && (
+                        <p className="font-sans text-[13px] md:text-[14px] leading-relaxed text-foreground/80 mb-4">
+                          {paragraph}
+                        </p>
+                      )}
+
+                      {/* Achievements / Deliverables List */}
+                      {item.achievements && item.achievements.length > 0 && (
+                        <div className="mb-6">
+                          <ul className="list-disc pl-5 space-y-2 text-foreground/80 font-sans text-[13px] md:text-[14px] leading-relaxed">
+                            {item.achievements.map((achievement, idx) => (
+                              <li key={idx} className="marker:text-verge-mint">
+                                {achievement}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
-                    {item.location && (
-                      <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-muted-foreground">
-                        LOC: {item.location}
+
+                    {/* Tech tags */}
+                    {item.tech_used && item.tech_used.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-border/10">
+                        {item.tech_used.map(tech => (
+                          <span key={tech} className="font-mono text-[10px] uppercase tracking-mono-wide border border-border/60 bg-accent/5 px-3 py-1 rounded-full text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors">
+                            {tech}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>
-                  
-                  {/* Tags */}
-                  {item.tech_used && item.tech_used.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {item.tech_used.map(tech => (
-                        <span key={tech} className="font-mono text-[11px] uppercase tracking-mono-wide bg-background border border-border/50 px-2 py-1 rounded-[2px] text-muted-foreground">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  )}
 
                 </div>
               </div>
