@@ -46,7 +46,15 @@ export default async function PortfolioLayout({ children }: { children: React.Re
 
   return (
     <div className={`min-h-screen text-foreground dark font-sans overflow-x-hidden relative`}>
-      <div className="fixed top-0 left-0 w-[100vw] h-[100lvh] z-0 pointer-events-none transition-opacity duration-500" style={{ opacity: opacityValue }}>
+      <div 
+        className="fixed top-0 left-0 z-0 pointer-events-none transition-opacity duration-500 origin-top-left" 
+        style={{ 
+          opacity: opacityValue, 
+          width: "50vw", 
+          height: "50lvh", 
+          transform: "scale(2)" 
+        }}
+      >
         <Warp
           {...warpParams}
           style={{ width: "100%", height: "100%" }}
