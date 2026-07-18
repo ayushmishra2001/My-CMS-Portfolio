@@ -64,9 +64,12 @@ export function EducationSection({ section, settings: _ }: Props) {
                   <div className="w-full lg:w-[60%] border border-border/30 bg-background/20 p-6 md:p-8 rounded-xl flex flex-col justify-between min-h-[280px]">
                     <div>
                       {/* Kicker */}
-                      <div className="flex items-center gap-1.5 font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-verge-mint mb-6">
-                        <GraduationCap className="h-4 w-4" strokeWidth={2} />
-                        <span>EDUCATION CREDENTIAL</span>
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] md:text-[11px] uppercase tracking-mono-wide text-verge-mint mb-6 flex-wrap">
+                        <GraduationCap className="h-4 w-4 shrink-0" strokeWidth={2} />
+                        <span>
+                          EDUCATION CREDENTIAL
+                          <span className="md:hidden text-foreground/50 ml-1.5 font-normal">// {yearRange}</span>
+                        </span>
                       </div>
                       
                       {/* Degree (Huge brutalist text) */}

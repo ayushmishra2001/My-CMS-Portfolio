@@ -87,9 +87,12 @@ export function ExperienceSection({ section, settings: _ }: Props) {
                   <div className="w-full lg:w-[35%] flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-border/30 p-6 md:p-8">
                     <div>
                       {/* Kicker */}
-                      <div className="flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-mono-wide text-verge-mint mb-4 font-bold">
-                        <Terminal className="h-4 w-4" strokeWidth={2.5} />
-                        <span>{item.company} {item.is_current && `// CURRENT`}</span>
+                      <div className="flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-mono-wide text-verge-mint mb-4 font-bold flex-wrap">
+                        <Terminal className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+                        <span>
+                          {item.company} {item.is_current && `// CURRENT`}
+                          <span className="md:hidden text-foreground/50 ml-1.5 font-normal">// {yearRange}</span>
+                        </span>
                       </div>
                       
                       {/* Role (Huge text, uppercase) */}
@@ -99,7 +102,7 @@ export function ExperienceSection({ section, settings: _ }: Props) {
                     </div>
                     
                     {/* Divider and Metadata */}
-                    <div className="pt-6 mt-6 border-t border-border/30 grid grid-cols-2 gap-4">
+                    <div className="pt-6 mt-6 border-t border-border/30 grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <div className="font-mono text-[9px] uppercase tracking-mono-wide text-muted-foreground/60 mb-1">
                           DURATION
