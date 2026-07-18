@@ -31,7 +31,7 @@ function ProjectCard({ project, index, layout }: { project: Project; index: numb
   const isCarousel = layout === "carousel";
 
   return (
-    <div className={`relative group ${isCarousel ? "w-[85vw] md:w-[450px] shrink-0 snap-center" : ""}`}>
+    <div className={`relative group ${isCarousel ? "w-full md:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] shrink-0 snap-start" : ""}`}>
       {/* List Layout: Left Rail Timestamp */}
       {!isCarousel && (
         <div className="absolute -left-6 md:-left-16 top-[28px] w-6 md:w-16 pr-2 md:pr-4 text-right">
@@ -139,8 +139,8 @@ export function ProjectsSection({ section, settings: _ }: Props) {
         if (scrollLeft + clientWidth >= scrollWidth - 10) {
           scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
         } else {
-          // Scroll by one card width (approx 450 + 24 gap = 474)
-          scrollRef.current.scrollBy({ left: 474, behavior: "smooth" });
+          // Scroll by one full page + gap
+          scrollRef.current.scrollBy({ left: clientWidth + 24, behavior: "smooth" });
         }
       }
     }, 3500); // Delayed auto-scroll every 3.5 seconds
@@ -150,13 +150,13 @@ export function ProjectsSection({ section, settings: _ }: Props) {
 
   const scrollLeft = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -474, behavior: "smooth" });
+      scrollRef.current.scrollBy({ left: -(scrollRef.current.clientWidth + 24), behavior: "smooth" });
     }
   };
 
   const scrollRight = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 474, behavior: "smooth" });
+      scrollRef.current.scrollBy({ left: scrollRef.current.clientWidth + 24, behavior: "smooth" });
     }
   };
 
@@ -166,7 +166,7 @@ export function ProjectsSection({ section, settings: _ }: Props) {
       
       {isCarousel ? (
         <div 
-          className="relative group/carousel -mx-4 md:-mx-6"
+          className="relative group/carousel"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -193,7 +193,7 @@ export function ProjectsSection({ section, settings: _ }: Props) {
           {/* Carousel Scroll Container */}
           <div 
             ref={scrollRef}
-            className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-hide px-4 md:px-6 py-4"
+            className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-hide py-4"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {projects.map((project, index) => (

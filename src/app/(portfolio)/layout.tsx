@@ -5,6 +5,7 @@ import { AnalyticsTracker } from "@/components/portfolio/shared/tracker";
 import { BackToTopButton } from "@/components/portfolio/shared/back-to-top";
 import { StickySocial } from "@/components/portfolio/shared/sticky-social";
 import Warp from "@/components/ui/warp";
+import { PortfolioThemeWrapper } from "@/components/portfolio/shared/theme-wrapper";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,7 +46,7 @@ export default async function PortfolioLayout({ children }: { children: React.Re
   const opacityValue = layerOpacity !== undefined ? Number(layerOpacity) : 0.7;
 
   return (
-    <div className={`min-h-screen text-foreground dark font-sans overflow-x-hidden relative`}>
+    <PortfolioThemeWrapper>
       <div 
         className="fixed top-0 left-0 z-0 pointer-events-none transition-opacity duration-500 origin-top-left" 
         style={{ 
@@ -71,6 +72,6 @@ export default async function PortfolioLayout({ children }: { children: React.Re
       <PortfolioFooter name={settings?.full_name || "Portfolio"} />
       <BackToTopButton />
       <StickySocial settings={settings ?? {}} />
-    </div>
+    </PortfolioThemeWrapper>
   );
 }

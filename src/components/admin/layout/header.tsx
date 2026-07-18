@@ -1,7 +1,9 @@
 "use client";
-import { Bell, Menu } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, Menu, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/shared/button";
 import { useMobileSidebar } from "@/hooks/use-mobile-sidebar";
+import { useAdminTheme } from "./theme-wrapper";
 
 interface AdminHeaderProps {
   title: string;
@@ -11,6 +13,12 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ title, description, actions }: AdminHeaderProps) {
   const toggle = useMobileSidebar((state) => state.toggle);
+  const { theme, toggleTheme } = useAdminTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="flex items-center justify-between h-16 px-4 md:px-6 border-b border-border bg-background shrink-0">
@@ -30,6 +38,22 @@ export function AdminHeader({ title, description, actions }: AdminHeaderProps) {
       </div>
       <div className="flex items-center gap-2 shrink-0">
         {actions}
+        
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground h-8 w-8"
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+        >
+          {mounted ? (
+            theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />
+          ) : (
+            <div className="h-4 w-4" />
+          )}
+        </Button>
+
         <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
           <Bell className="h-4 w-4" />
         </Button>

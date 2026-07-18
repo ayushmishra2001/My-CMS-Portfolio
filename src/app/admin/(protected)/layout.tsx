@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/layout/sidebar";
+import { AdminThemeWrapper } from "@/components/admin/layout/theme-wrapper";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -13,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <AdminThemeWrapper>
       <style dangerouslySetInnerHTML={{ __html: `
         html, body {
           overflow: hidden !important;
@@ -26,6 +27,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <main className="flex-1 flex flex-col overflow-hidden">
         {children}
       </main>
-    </div>
+    </AdminThemeWrapper>
   );
 }

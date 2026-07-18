@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
+import { usePortfolioTheme } from "./theme-wrapper";
 
 interface NavProps {
   name: string;
@@ -18,7 +18,7 @@ export function PortfolioNav({ name, sections }: NavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = usePortfolioTheme();
 
   useEffect(() => setMounted(true), []);
 
@@ -95,7 +95,7 @@ export function PortfolioNav({ name, sections }: NavProps) {
         <div className="flex items-center gap-4">
           {/* Theme Toggle */}
           <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-accent/10 transition-colors text-foreground"
             aria-label="Toggle theme"
           >
