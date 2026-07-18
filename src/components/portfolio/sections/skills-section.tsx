@@ -34,20 +34,52 @@ export function SkillsSection({ section, settings: _ }: Props) {
     return [...catSkills, ...catSkills, ...catSkills];
   };
 
+  const sortedCategories = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
+  const N = sortedCategories.length;
+
+  // Calculate dynamic column spans to make the grid perfectly even
+  const getColSpans = () => {
+    if (N === 0) return [];
+    
+    // Desktop spans (lg: 3 cols)
+    const lgSpans = [2, ...Array(N - 1).fill(1)];
+    const sumBeforeLastLg = lgSpans.slice(0, N - 1).reduce((a, b) => a + b, 0);
+    const colIndexLg = sumBeforeLastLg % 3;
+    lgSpans[N - 1] = 3 - colIndexLg;
+
+    // Tablet spans (md: 2 cols)
+    const mdSpans = [2, ...Array(N - 1).fill(1)];
+    const sumBeforeLastMd = mdSpans.slice(0, N - 1).reduce((a, b) => a + b, 0);
+    const colIndexMd = sumBeforeLastMd % 2;
+    mdSpans[N - 1] = 2 - colIndexMd;
+
+    return sortedCategories.map((_, i) => ({
+      lg: lgSpans[i],
+      md: mdSpans[i],
+    }));
+  };
+
+  const colSpans = getColSpans();
+
   return (
     <SectionWrapper section={section} className="overflow-hidden">
       <SectionHeading title={section.label} subtitle={section.subtitle} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-        {Object.entries(grouped).map(([category, catSkills]) => {
+        {sortedCategories.map(([category, catSkills], index) => {
           // Borrow the icon from the first skill that has one, fallback to 'Code'
           const firstSkillWithIcon = catSkills.find(s => !!s.icon_name);
           const CategoryIcon = getLucideIcon(firstSkillWithIcon?.icon_name || "Code");
+          const spans = colSpans[index];
+
+          // Map spans to Tailwind classes
+          const lgClass = spans?.lg === 3 ? "lg:col-span-3" : spans?.lg === 2 ? "lg:col-span-2" : "lg:col-span-1";
+          const mdClass = spans?.md === 2 ? "md:col-span-2" : "md:col-span-1";
 
           return (
             <div 
               key={category} 
-              className="flex flex-col bg-background border border-border rounded-2xl p-8 hover:border-verge-mint/30 transition-all duration-500 group relative overflow-hidden shadow-sm"
+              className={`flex flex-col bg-background border border-border rounded-2xl p-8 hover:border-verge-mint/30 transition-all duration-500 group relative overflow-hidden shadow-sm h-full col-span-1 ${mdClass} ${lgClass}`}
             >
               {/* Subtle top highlight bar that reveals on hover */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-verge-mint transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out" />

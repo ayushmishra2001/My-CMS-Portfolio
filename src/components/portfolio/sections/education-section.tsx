@@ -36,15 +36,19 @@ export function EducationSection({ section, settings: _ }: Props) {
           {items.map((item, index) => {
             const startYear = getYearString(item.start_date);
             const endYear = item.is_current ? "PRES" : getYearString(item.end_date);
+            const yearRange = startYear === endYear ? startYear : `${startYear} // ${endYear}`;
             const isHighlight = index === 0;
 
             return (
               <div key={item.id} className="relative group">
                 
-                {/* Left Rail Timestamp */}
-                <div className="absolute -left-6 md:-left-16 top-[28px] w-6 md:w-16 pr-2 md:pr-4 text-right">
-                  <span className="block font-mono text-[10px] md:text-[11px] font-medium uppercase tracking-mono-tight text-muted-foreground bg-background py-1">
-                    {startYear}
+                {/* Timeline Square Node */}
+                <div className="absolute left-[-24px] md:left-[-32px] top-[32px] w-1.5 h-1.5 -translate-x-1/2 bg-primary z-10" />
+
+                {/* Left Rail Year Range (Desktop) */}
+                <div className="hidden md:block absolute left-[-32px] top-[28px] -translate-x-full pr-6 text-right select-none whitespace-nowrap">
+                  <span className="font-mono text-[10px] tracking-mono-tight text-foreground/80">
+                    {yearRange}
                   </span>
                 </div>
 
@@ -56,8 +60,13 @@ export function EducationSection({ section, settings: _ }: Props) {
                     : "bg-background border border-border hover:border-verge-link"}
                 `}>
                   {/* Kicker */}
-                  <div className="font-mono text-[11px] md:text-[12px] uppercase tracking-mono-wide text-verge-mint mb-2">
-                    {item.institution}
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-mono text-[11px] md:text-[12px] uppercase tracking-mono-wide text-verge-mint">
+                      {item.institution}
+                    </span>
+                    <span className="md:hidden font-mono text-[10px] uppercase tracking-mono-wide text-muted-foreground bg-background/50 px-1.5 py-0.5 border border-border rounded-[2px]">
+                      {startYear}
+                    </span>
                   </div>
 
                   {/* Headline */}
