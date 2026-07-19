@@ -59,7 +59,7 @@ export function ContactSection({ section, settings }: Props) {
   const showForm = !!content.show_form;
 
   return (
-    <SectionWrapper section={section}>
+    <SectionWrapper section={section} className="!pb-0">
       <SectionHeading title={section.label} subtitle={section.subtitle} />
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">

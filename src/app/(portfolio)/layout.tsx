@@ -66,7 +66,7 @@ export default async function PortfolioLayout({ children }: { children: React.Re
         name={settings?.display_name || settings?.full_name || "Portfolio"}
         sections={sections ?? []}
       />
-      <main className="relative z-10 max-w-[1300px] mx-auto px-6 md:px-12 py-8 md:py-16 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <main className="relative z-10 max-w-[1300px] mx-auto px-6 md:px-12 pt-8 pb-4 md:pt-16 md:pb-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
         {children}
       </main>
       <PortfolioFooter name={settings?.full_name || "Portfolio"} />
